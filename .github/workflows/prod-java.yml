@@ -8,6 +8,6 @@ jobs:
   docker-as400-java:
     uses: ./.github/workflows/build-image-java.yml
     with:
-      image_name: as400JavaDS
+      image_name: as400jds
       environment: prod
       branch: master
