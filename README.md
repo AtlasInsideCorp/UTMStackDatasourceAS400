@@ -13,5 +13,7 @@ In order to extract logs using this tool, you must configure some environment va
 - _AS400_USER_ID_: Represents the user id used to connect to the IBM i System. Example: `USER1`.
 - _AS400_USER_PASSWORD_: Represents the user's password to connect to IBM System. Example: `mypassword1`.
 
-To execute the tool, you must create a docker container using this docker image `docker pull ghcr.io/atlasinsidecorp/as400jds:prod`, 
+To execute the tool, you must create a docker container using this docker image `docker pull ghcr.io/atlasinsidecorp/as400jds:prod_${time_mark}`, 
 with the environment variables configured as described before.
+Example of code before, with ${time_mark} set:
+`docker pull ghcr.io/atlasinsidecorp/as400jds:prod_20230120030016`. Contact to the repository administrator to get the latest version.
