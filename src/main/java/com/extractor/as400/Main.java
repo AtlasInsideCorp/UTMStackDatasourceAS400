@@ -67,7 +67,7 @@ public class Main {
 
 
                } catch (Exception ex) {
-                   System.out.println(ex.getMessage());
+                   System.out.println(ex.getLocalizedMessage());
                }
            }
         }

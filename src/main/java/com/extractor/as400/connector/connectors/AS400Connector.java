@@ -21,7 +21,15 @@ public class AS400Connector implements IConnector {
             as400.setPassword(EnvironmentConfig.AS400_USER_PASSWORD.toCharArray());
             System.out.println("***** AS400 Initiated *****");
         } else {
-            System.out.println("***** AS400 connection reused *****");
+            if (as400.isConnected() && as400.isConnectionAlive()) {
+                System.out.println("***** AS400 connection reused *****");
+            } else {
+                as400 = new AS400(EnvironmentConfig.AS400_HOST_NAME);
+                as400.setGuiAvailable(false);
+                as400.setUserId(EnvironmentConfig.AS400_USER_ID);
+                as400.setPassword(EnvironmentConfig.AS400_USER_PASSWORD.toCharArray());
+                System.out.println("***** AS400 trying with new connection *****");
+            }
         }
         return as400;
     }
