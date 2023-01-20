@@ -1,5 +1,7 @@
 package com.extractor.as400;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Enumeration;
 import com.extractor.as400.connector.factory.ConnectorFactory;
 import com.extractor.as400.enums.ConnectorEnum;
@@ -20,13 +22,13 @@ public class Main {
            if (ConfigVerification.isEnvironmentOk()) {
                try {
 
-                   System.out.println("***** PHASE 1. Connection *****");
+                   System.out.println("*****"+getActualDate()+" PHASE 1. Connection *****");
                    // Connect to the AS400 server and Syslog destination
                    AS400 as400 = (AS400) new ConnectorFactory().getConnectorByType(ConnectorEnum.AS400_V1.get()).getConnector();
                    SyslogIF syslogServer = (SyslogIF) new ConnectorFactory().getConnectorByType(ConnectorEnum.SYSLOG_V1.get()).getConnector();
 
 
-                   System.out.println("***** PHASE 2. Getting logs and sending to Syslog *****");
+                   System.out.println("*****"+getActualDate()+" PHASE 2. Getting logs and sending to Syslog *****");
                    // Getting logs
                    HistoryLog historyLog = new HistoryLog(as400);
                    Enumeration messageList = historyLog.getMessages();
@@ -56,7 +58,7 @@ public class Main {
                            }
                        }
                    }
-                   System.out.println("***** PHASE 3. Saving last log date *****");
+                   System.out.println("*****"+getActualDate()+" PHASE 3. Saving last log date *****");
                    historyLog.close();
                    if (calendarEND > calendarSTART) {
                        FileOperations.saveLastLogDate(calendarEND);
@@ -69,5 +71,12 @@ public class Main {
                }
            }
         }
+    }
+
+    // Method to get current datetime
+    public static String getActualDate(){
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        return dtf.format(LocalDateTime.now());
+
     }
 }
