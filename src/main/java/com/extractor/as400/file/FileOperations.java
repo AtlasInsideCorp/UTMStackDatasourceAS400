@@ -16,7 +16,7 @@ public class FileOperations {
                 LOCAL_STORAGE.mkdir();
             }
             FileOutputStream fos = new FileOutputStream(LOCAL_STORAGE_FILE);
-            fos.write("0L".getBytes());
+            fos.write("0".getBytes());
             fos.close();
             return 0L;
         } else {
