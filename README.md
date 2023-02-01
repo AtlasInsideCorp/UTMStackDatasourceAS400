@@ -8,7 +8,7 @@ In order to extract logs using this tool, you must configure some environment va
 
 - _SYSLOG_PROTOCOL_: Represents the protocol of the listening syslog server to send logs to. Example: `udp`.
 - _SYSLOG_HOST_: Represents the IP or HOST of the listening syslog server to send logs to. Example: `172.20.0.18`.
-- _SYSLOG_PORT_: Represents the protocol of the listening syslog server to send logs to. Example: `514`.
+- _SYSLOG_PORT_: Represents the port of the listening syslog server to send logs to. Example: `514`.
 - _AS400_HOST_NAME_: Represents  the hostname of the IBM i System, where the logs will be extracted. Example: `PUB400.COM`.
 - _AS400_USER_ID_: Represents the user id used to connect to the IBM i System. Example: `USER1`.
 - _AS400_USER_PASSWORD_: Represents the user's password to connect to IBM System. Example: `mypassword1`.
