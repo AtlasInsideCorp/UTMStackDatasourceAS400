@@ -1,82 +1,76 @@
 package com.extractor.as400;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Enumeration;
-import com.extractor.as400.connector.factory.ConnectorFactory;
-import com.extractor.as400.enums.ConnectorEnum;
-import com.extractor.as400.file.FileOperations;
+import java.util.Iterator;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
+import com.extractor.as400.concurrent.AS400ParallelTask;
+import com.extractor.as400.connector.connectors.SyslogConnector;
+import com.extractor.as400.models.ServerState;
 import com.extractor.as400.util.ConfigVerification;
-import com.ibm.as400.access.*;
 import org.productivity.java.syslog4j.SyslogIF;
 
 
 public class Main {
-    public static final int BATCH_SIZE = 100000;
-    public static final String META_AS400_KEY = "[DEVICE_TYPE=AS400, LOG_GEN_AGENT=U7M_574-CK] ";
+
     public static void main(String[] args) {
 
-        // Set always running
-        while (true) {
-            // Check if environment is ok
-           if (ConfigVerification.isEnvironmentOk()) {
-               try {
+        // Check if environment is ok
+        if (ConfigVerification.isEnvironmentOk()) {
 
-                   System.out.println("*****"+getActualDate()+" PHASE 1. Connection *****");
-                   // Connect to the AS400 server and Syslog destination
-                   AS400 as400 = (AS400) new ConnectorFactory().getConnectorByType(ConnectorEnum.AS400_V1.get()).getConnector();
-                   SyslogIF syslogServer = (SyslogIF) new ConnectorFactory().getConnectorByType(ConnectorEnum.SYSLOG_V1.get()).getConnector();
+            //First we create fixed thread pool executor with (Servers count) threads, one per server
+            ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(ConfigVerification.getServerStateList().size());
 
-
-                   System.out.println("*****"+getActualDate()+" PHASE 2. Getting logs and sending to Syslog *****");
-                   // Getting logs
-                   HistoryLog historyLog = new HistoryLog(as400);
-                   Enumeration messageList = historyLog.getMessages();
-
-                   // Read last saved state (log date)
-                   long calendarSTART = FileOperations.readLastLogDate();
-                   System.out.println("***** From -> " + calendarSTART);
-
-                   // To store saved state
-                   long calendarEND = 0L;
-                   // Counter to count until BATCH_SIZE is reached
-                   int batchCounter = 0;
-
-                   while (messageList.hasMoreElements()) {
-                       AS400Message message = (AS400Message) messageList.nextElement();
-                       // We look for a time change after we reach the batch size because, in some environments, a bunch of logs can have the same time mark
-                       // So we save the time mark after time change when we reach the BATCH_SIZE
-                       if (batchCounter >= BATCH_SIZE && (calendarEND != message.getDate().getTimeInMillis())) {
-                           if (calendarEND > calendarSTART) {
-                               FileOperations.saveLastLogDate(calendarEND);
-                           }
-                       } else {
-                           if (message.getDate().getTimeInMillis() > calendarSTART) {
-                               syslogServer.log(syslogServer.getConfig().getFacility(), META_AS400_KEY+message.getText());
-                               calendarEND = message.getDate().getTimeInMillis();
-                               batchCounter++;
-                           }
-                       }
-                   }
-                   System.out.println("*****"+getActualDate()+" PHASE 3. Saving last log date *****");
-                   historyLog.close();
-                   if (calendarEND > calendarSTART) {
-                       FileOperations.saveLastLogDate(calendarEND);
-                   }
-                   Thread.sleep(5000);
+            //Creating syslog connection (Destination)
+            SyslogIF syslogServer = null;
+            try {
+                syslogServer = (SyslogIF) SyslogConnector.getConnector();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
 
-               } catch (Exception ex) {
-                   System.out.println(ex.getLocalizedMessage());
-               }
-           }
+            //--------------------------------The concurrent ETL process is here-------------------------------------------
+            if (syslogServer != null) {
+                Iterator<ServerState> serverStateIterator;
+                for (serverStateIterator = ConfigVerification.getServerStateList().iterator(); serverStateIterator.hasNext(); ) {
+                    try {
+                        executor.execute(new AS400ParallelTask(serverStateIterator.next(), syslogServer));
+                    } catch (Exception e) {
+
+                    }
+                }
+
+                //Thread end is called
+                executor.shutdown();
+                //Wait 1 sec until termination
+                while (!executor.isTerminated()) {
+                    try {
+                        executor.awaitTermination(1, TimeUnit.SECONDS);
+                    } catch (Exception e) {
+
+                    }
+                }
+
+                // Finally, print summary of servers status
+                Iterator<ServerState> summaryIterator;
+                System.out.println("***** " + ConfigVerification.getActualDate() + " SERVERS SUMMARY *****");
+                for (summaryIterator = ConfigVerification.getServerStateList().iterator(); summaryIterator.hasNext(); ) {
+                    ServerState tmp = summaryIterator.next();
+                    System.out.println("***** " + tmp.toString() + " *****");
+                }
+                System.out.println("***** SERVERS SUMMARY (END) *****");
+            }
+        } else {
+            System.out.println("***** ERROR. For some reasons, the syslog server can't be created, please check your environment and network *****");
+        }
+        // Wait 5 seconds to have time to stop if using docker compose with restart always
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+
         }
     }
 
-    // Method to get current datetime
-    public static String getActualDate(){
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        return dtf.format(LocalDateTime.now());
-
-    }
 }

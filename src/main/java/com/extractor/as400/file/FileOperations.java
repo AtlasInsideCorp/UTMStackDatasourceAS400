@@ -1,16 +1,14 @@
 package com.extractor.as400.file;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.RandomAccessFile;
+import com.extractor.as400.models.ServerDefAS400;
+import java.io.*;
 
 public class FileOperations {
     private static final File LOCAL_STORAGE = new File("local_storage");
-    private static final File LOCAL_STORAGE_FILE = new File("local_storage/last_log_date.log");
 
-    public static Long readLastLogDate() throws IOException {
+    public static Long readLastLogDate(ServerDefAS400 serverDefAS400) throws IOException {
         // IF the file don't exists return 0L (read logs from the beginning)
+        File LOCAL_STORAGE_FILE = new File("local_storage/last_log_date_"+serverDefAS400.getHostName()+"_"+serverDefAS400.getServerId()+".log");
         if (!LOCAL_STORAGE_FILE.exists()) {
             if (!LOCAL_STORAGE.exists()) {
                 LOCAL_STORAGE.mkdir();
@@ -27,10 +25,25 @@ public class FileOperations {
         }
     }
 
-    public static void saveLastLogDate(Long last_date) throws IOException {
+    public static void saveLastLogDate(Long last_date, ServerDefAS400 serverDefAS400) throws IOException {
+        File LOCAL_STORAGE_FILE = new File("local_storage/last_log_date_"+serverDefAS400.getHostName()+"_"+serverDefAS400.getServerId()+".log");
         FileOutputStream fos = new FileOutputStream(LOCAL_STORAGE_FILE);
         String tmp = ""+last_date;
         fos.write(tmp.getBytes());
         fos.close();
+    }
+
+    public static String readServersFile() throws IOException {
+        RandomAccessFile raf = new RandomAccessFile("local_storage/Servers.json", "r");
+
+        String inputLine;
+        StringBuilder stb = new StringBuilder();
+
+        while ((inputLine = raf.readLine()) != null) {
+            stb.append(inputLine + "\n");
+        }
+
+        raf.close();
+        return stb.toString();
     }
 }

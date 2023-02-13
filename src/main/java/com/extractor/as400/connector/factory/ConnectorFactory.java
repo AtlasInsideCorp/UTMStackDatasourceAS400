@@ -10,11 +10,11 @@ public class ConnectorFactory {
     }
 
     public IConnector getConnectorByType (String TYPE){
-        if (TYPE.compareTo(ConnectorEnum.AS400_V1.get())==0) {
+        /*if (TYPE.compareTo(ConnectorEnum.AS400_V1.get())==0) {
             return new AS400Connector();
         } else if (TYPE.compareTo(ConnectorEnum.SYSLOG_V1.get())==0) {
             return new SyslogConnector();
-        }
+        }*/
     return null;
     }
 }
