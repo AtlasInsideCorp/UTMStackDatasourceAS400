@@ -2,17 +2,11 @@ package com.extractor.as400.concurrent;
 
 import com.extractor.as400.config.EnvironmentConfig;
 import com.extractor.as400.connector.connectors.AS400Connector;
-import com.extractor.as400.connector.connectors.SyslogConnector;
-import com.extractor.as400.connector.factory.ConnectorFactory;
-import com.extractor.as400.enums.ConnectorEnum;
 import com.extractor.as400.file.FileOperations;
 import com.extractor.as400.models.ServerState;
 import com.extractor.as400.util.ConfigVerification;
 import com.ibm.as400.access.*;
 import org.productivity.java.syslog4j.SyslogIF;
-
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Enumeration;
 
 public class AS400ParallelTask implements Runnable {
@@ -44,10 +38,14 @@ public class AS400ParallelTask implements Runnable {
 
             // Connect to the AS400 server and Syslog destination
             AS400JPing pingObj = new AS400JPing(this.serverState.getServerDefAS400().getHostName());
-            if (pingObj.ping()) {
+            Object[] pingResult = pingVerification(pingObj);
+            boolean pingStatusOk = (boolean) pingResult[0];
+            String pingData = (String) pingResult[1];
+
+            if (pingStatusOk) {
                 // Begin sign-on test
                 AS400 as400 = (AS400) new AS400Connector().getNewOrReuseConnector(this.serverState.getServerDefAS400());
-                if (as400.validateSignon()) {
+
                     if (as400.authenticate(this.serverState.getServerDefAS400().getUserId(),
                             this.serverState.getServerDefAS400().getUserPassword().toCharArray())) {
 
@@ -104,30 +102,102 @@ public class AS400ParallelTask implements Runnable {
                         logsBuffer.append("***** " + ConfigVerification.getActualDate() + " ERROR authentication attempt failed to -> " + ConfigVerification.getServerStateStatus(this.serverState).toString() + " please, check you configuration at Servers.json file, or check the AS400 system, it may be unavailable at this moment *****\n");
                         System.out.println(logsBuffer);
                     }
-                    // End sing-on test
-                } else {
-                    ConfigVerification.changeServerStateStatus(this.serverState, "ERROR");
-                    logsBuffer.append("***** " + ConfigVerification.getActualDate() + " ERROR sign-on test failed to -> " + ConfigVerification.getServerStateStatus(this.serverState).toString() + " please, check you configuration at Servers.json file *****\n");
-                    System.out.println(logsBuffer);
-                }
                 // End of ping test
             } else {
                 ConfigVerification.changeServerStateStatus(this.serverState, "ERROR");
                 logsBuffer.append("***** " + ConfigVerification.getActualDate() + " ERROR ping test failed to -> " + ConfigVerification.getServerStateStatus(this.serverState).toString() + " system is unreachable, please check the options below: *****\n");
+                logsBuffer.append("***** SERVICES STATUS *******");
+                logsBuffer.append(pingData+"\n");
                 logsBuffer.append("*** - Check if the network is working and if you have access to the server from the current IP *****\n");
-                logsBuffer.append("*** - Check the AS400 system state, may be, is down *****\n");
                 logsBuffer.append("*** - Check if you are using a proxy between current IP and the AS400 *****\n");
                 logsBuffer.append("*** - If your AS400 system is using default ports, check if the following ports are open: 8473, 8474, 8475, 8472, 8471, 446, 8470, 8476, 9473, 9474, 9475, 9472, 9471, 448, 9470, 9476 *****\n");
                 logsBuffer.append("*** - Check if you have access from the current IP to the AS400 system by ports above *****\n");
+                logsBuffer.append("*** - Enable the failing services *****\n");
                 System.out.println(logsBuffer);
             }
 
         } catch (Exception e) {
             ConfigVerification.changeServerStateStatus(this.serverState, "ERROR");
             logsBuffer.append("***** " + ConfigVerification.getActualDate() + " ERROR getting data from as400 " + ConfigVerification.getServerStateStatus(this.serverState).toString() + " *****\n");
+            logsBuffer.append("***** Message: " + e.getMessage() + " *****\n");
             System.out.println(logsBuffer);
             Thread.currentThread().interrupt();
         }
+    }
+
+    // Method to know services available
+    public Object [] pingVerification(AS400JPing pingObj) throws Exception {
+        Object[] result = new Object[2];
+        String pingStr = "";
+        boolean pingBol = true;
+        result[0] = pingBol;
+        result[1] = pingStr;
+
+        if (pingObj.ping(AS400.PRINT)) {
+            pingStr+="\n*** AS400.PRINT (SUCCESS) ***";
+            result[1] = pingStr;
+        } else {
+            pingStr+="\n*** AS400.PRINT (FAIL) ***";
+            result[1] = pingStr;
+        }
+        if (pingObj.ping(AS400.FILE)) {
+            pingStr+="\n*** AS400.FILE (SUCCESS) ***";
+            result[1] = pingStr;
+        } else {
+            pingStr+="\n*** AS400.FILE (FAIL) ***";
+            result[0] = false;
+            result[1] = pingStr;
+        }
+        if (pingObj.ping(AS400.COMMAND)) {
+            pingStr+="\n*** AS400.COMMAND (SUCCESS) ***";
+            result[1] = pingStr;
+        } else {
+            pingStr+="\n*** AS400.COMMAND (FAIL) ***";
+            result[0] = false;
+            result[1] = pingStr;
+        }
+        if (pingObj.ping(AS400.DATAQUEUE)) {
+            pingStr+="\n*** AS400.DATAQUEUE (SUCCESS) ***";
+            result[1] = pingStr;
+        } else {
+            pingStr+="\n*** AS400.DATAQUEUE (FAIL) ***";
+            result[0] = false;
+            result[1] = pingStr;
+        }
+        if (pingObj.ping(AS400.DATABASE)) {
+            pingStr+="\n*** AS400.DATABASE (SUCCESS) ***";
+            result[1] = pingStr;
+        } else {
+            pingStr+="\n*** AS400.DATABASE (FAIL) ***";
+            result[0] = false;
+            result[1] = pingStr;
+        }
+        if (pingObj.ping(AS400.RECORDACCESS)) {
+            pingStr+="\n*** AS400.RECORDACCESS (SUCCESS) ***";
+            result[1] = pingStr;
+        } else {
+            pingStr+="\n*** AS400.RECORDACCESS (FAIL) ***";
+            result[0] = false;
+            result[1] = pingStr;
+        }
+        if (pingObj.ping(AS400.CENTRAL)) {
+            pingStr+="\n*** AS400.CENTRAL (SUCCESS) ***";
+            result[1] = pingStr;
+        } else {
+            pingStr+="\n*** AS400.CENTRAL (FAIL) ***";
+            result[1] = pingStr;
+        }
+        if (pingObj.ping(AS400.SIGNON)) {
+            pingStr+="\n*** AS400.SIGNON (SUCCESS) ***";
+            result[1] = pingStr;
+        } else {
+            pingStr+="\n*** AS400.SIGNON (FAIL) ***";
+            result[0] = false;
+            result[1] = pingStr;
+        }
+
+
+        return result;
     }
 
 }
