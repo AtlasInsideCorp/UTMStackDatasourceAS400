@@ -113,7 +113,7 @@ public class AS400ParallelTask implements Runnable {
                 // End of ping test
             } else {
                 ConfigVerification.changeServerStateStatus(this.serverState, "ERROR");
-                logsBuffer.append("***** " + ConfigVerification.getActualDate() + " ERROR ping test failed to -> " + ConfigVerification.getServerStateStatus(this.serverState).toString() + " system is unreachable, please check the options below *****\n");
+                logsBuffer.append("***** " + ConfigVerification.getActualDate() + " ERROR ping test failed to -> " + ConfigVerification.getServerStateStatus(this.serverState).toString() + " system is unreachable, please check the options below: *****\n");
                 logsBuffer.append("*** - Check if the network is working and if you have access to the server from the current IP *****\n");
                 logsBuffer.append("*** - Check the AS400 system state, may be, is down *****\n");
                 logsBuffer.append("*** - Check if you are using a proxy between current IP and the AS400 *****\n");
