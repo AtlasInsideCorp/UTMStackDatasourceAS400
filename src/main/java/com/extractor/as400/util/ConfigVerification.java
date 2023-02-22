@@ -23,6 +23,8 @@ public class ConfigVerification {
     private static ServerConfigAS400 serverConfigAS400;
     // To hold all servers with it state
     private static List<ServerState> serverStateList = new ArrayList<>();
+    // To hold the compilation version used to log
+    public static final String API_VERSION = "2.0.0 - 22-02-23 11:48:56";
 
     public static boolean isEnvironmentOk() {
         if (EnvironmentConfig.SYSLOG_HOST == null || EnvironmentConfig.SYSLOG_HOST.compareTo("") == 0 ||

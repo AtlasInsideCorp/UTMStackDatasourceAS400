@@ -69,7 +69,6 @@ public class AS400ParallelTask implements Runnable {
                         historyLog = new HistoryLog(as400);
                         messageList = historyLog.getMessages();
                     } catch (Exception e) {
-                        e.printStackTrace();
                         ConfigVerification.changeServerStateStatus(this.serverState, "ERROR");
                         serverState = ConfigVerification.getServerStateStatus(this.serverState);
                         stateInfo = serverState != null ? serverState.toString() : this.serverState.toString();

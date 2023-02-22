@@ -15,7 +15,9 @@ import org.productivity.java.syslog4j.SyslogIF;
 public class Main {
 
     public static void main(String[] args) {
-
+        System.out.println("**************************************************************");
+        System.out.println("***** DATASOURCE AS400 VERSION " + ConfigVerification.API_VERSION + " *****");
+        System.out.println("**************************************************************");
         // Check if environment is ok
         if (ConfigVerification.isEnvironmentOk()) {
 
