@@ -61,9 +61,9 @@ public class Main {
                     System.out.println("***** " + tmp.toString() + " *****");
                 }
                 System.out.println("***** SERVERS SUMMARY (END) *****");
+            } else {
+                System.out.println("***** ERROR. For some reasons, the syslog server can't be created, please check your environment and network *****");
             }
-        } else {
-            System.out.println("***** ERROR. For some reasons, the syslog server can't be created, please check your environment and network *****");
         }
         // Wait 5 seconds to have time to stop if using docker compose with restart always
         try {
