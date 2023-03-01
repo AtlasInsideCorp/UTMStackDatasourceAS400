@@ -87,6 +87,7 @@ public class AS400ParallelTask implements Runnable {
                     }
 
                     if (historyLog != null && messageList != null) {
+                        logsBuffer.append("***** ").append(ConfigVerification.getActualDate()).append(" Reading last state ").append(stateInfo).append(" *****\n");
                         // Read last saved state (log date)
                         long calendarSTART = FileOperations.readLastLogDate(this.serverState.getServerDefAS400());
                         serverState = ConfigVerification.getServerStateStatus(this.serverState);
@@ -171,6 +172,7 @@ public class AS400ParallelTask implements Runnable {
             logsBuffer.append("***** ").append(ConfigVerification.getActualDate()).append(" ERROR getting data from as400 ").append(stateInfo).append(" *****\n");
             logsBuffer.append("***** Unable to access: ").append(e.getMessage()).append(" *****\n");
             System.out.println(logsBuffer);
+            e.printStackTrace();
             Thread.currentThread().interrupt();
         }
     }
