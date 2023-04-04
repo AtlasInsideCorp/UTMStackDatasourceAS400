@@ -17,6 +17,9 @@ must be in the same folder where the executable .jar is.
 
 If you are using docker, the Servers.json file must be inside the folder mapped to the volume.
 
+**Note:** If you have more than one configuration file under `local_storage` folder, the last modified by date, will be taken,
+but, we recommend that you have only one configuration file to avoid configuration issues.
+
 #### Structure of Servers.json
 The `Servers.json` file holds all servers of type AS400, that you need to extract logs from, and must have
 th following structure:

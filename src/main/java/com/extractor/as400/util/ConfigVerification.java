@@ -24,7 +24,7 @@ public class ConfigVerification {
     // To hold all servers with it state
     private static List<ServerState> serverStateList = new ArrayList<>();
     // To hold the compilation version used to log
-    public static final String API_VERSION = "2.0.0 - 01-03-23 10:40:38";
+    public static final String API_VERSION = "2.1.0 - 04-04-23 10:29:14";
 
     public static boolean isEnvironmentOk() {
         if (EnvironmentConfig.SYSLOG_HOST == null || EnvironmentConfig.SYSLOG_HOST.compareTo("") == 0 ||
@@ -70,6 +70,7 @@ public class ConfigVerification {
                         "\n * " +
                         EnvironmentsEnum.SYSLOG_PROTOCOL +
                         " is required, has to be defined and can't be empty" +
+                        "\n * Error: " + ex.getMessage() +
                         "\n *********************************************************************************************************");
                 return false;
             }
