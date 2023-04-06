@@ -94,7 +94,7 @@ public class ConfigVerification {
         for (as400Iterator = serverStateList.iterator(); as400Iterator.hasNext();){
             ServerState server = as400Iterator.next();
             if (server.getServerDefAS400().getHostName().compareTo(serverToChange.getServerDefAS400().getHostName()) == 0
-            && server.getServerDefAS400().getServerId().intValue() == serverToChange.getServerDefAS400().getServerId().intValue()) {
+            && server.getServerDefAS400().getTenant().intValue() == serverToChange.getServerDefAS400().getTenant().intValue()) {
                 server.setStatus(newStatus);
             }
         }
@@ -105,7 +105,7 @@ public class ConfigVerification {
         for (as400Iterator = serverStateList.iterator(); as400Iterator.hasNext();){
             ServerState server = as400Iterator.next();
             if (server.getServerDefAS400().getHostName().compareTo(serverToChange.getServerDefAS400().getHostName()) == 0
-                    && server.getServerDefAS400().getServerId().intValue() == serverToChange.getServerDefAS400().getServerId().intValue()) {
+                    && server.getServerDefAS400().getTenant().intValue() == serverToChange.getServerDefAS400().getTenant().intValue()) {
                 return server;
             }
         }
@@ -119,7 +119,7 @@ public class ConfigVerification {
                 if (i!=j) {
                     ServerState search = serverStateList.get(j);
                     if (base.getServerDefAS400().getHostName().compareTo(search.getServerDefAS400().getHostName()) == 0
-                            && base.getServerDefAS400().getServerId().intValue() == search.getServerDefAS400().getServerId().intValue()) {
+                            && base.getServerDefAS400().getTenant().intValue() == search.getServerDefAS400().getTenant().intValue()) {
                         return true;
                     }
                 }

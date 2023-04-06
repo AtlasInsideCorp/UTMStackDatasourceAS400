@@ -111,7 +111,8 @@ public class AS400ParallelTask implements Runnable {
                             }
                             if (message.getDate().getTimeInMillis() > calendarSTART) {
                                 this.syslogServer.log(this.syslogServer.getConfig().getFacility(),
-                                        EnvironmentConfig.META_AS400_KEY + "[AS400Server=" + this.serverState.getServerDefAS400().getHostName() + "] " + message.getText());
+                                        EnvironmentConfig.META_AS400_KEY + "[AS400Server=" + this.serverState.getServerDefAS400().getHostName() + "] "
+                                                + "[AS400Tenant=" + this.serverState.getServerDefAS400().getTenant() + "] " + message.getText());
                                 calendarEND = message.getDate().getTimeInMillis();
                                 batchCounter++;
                             }

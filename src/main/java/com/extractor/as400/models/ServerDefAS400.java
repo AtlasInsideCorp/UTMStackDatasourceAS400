@@ -4,13 +4,13 @@ public class ServerDefAS400 {
     String hostname;
     String userId;
     String user_password;
-    Integer serverId;
+    Integer tenant;
 
-    public ServerDefAS400(String hostname, String userId, String user_password, Integer serverId) {
+    public ServerDefAS400(String hostname, String userId, String user_password, Integer tenant) {
         this.hostname = hostname;
         this.userId = userId;
         this.user_password = user_password;
-        this.serverId = serverId;
+        this.tenant = tenant;
     }
     public ServerDefAS400(){}
 
@@ -38,18 +38,18 @@ public class ServerDefAS400 {
         this.user_password = user_password;
     }
 
-    public Integer getServerId() {
-        return serverId;
+    public Integer getTenant() {
+        return tenant;
     }
 
-    public void setServerId(Integer serverId) {
-        this.serverId = serverId;
+    public void setTenant(Integer tenant) {
+        this.tenant = tenant;
     }
 
     @Override
     public String toString() {
         return "Server INFO { " +
-                "serverId=" + serverId +
+                "tenant=" + tenant +
                 ", hostname=" + hostname +
                 " }";
     }

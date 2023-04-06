@@ -31,13 +31,13 @@ th following structure:
             "hostname": "your IBM system DNS Example: PUB400.COM",
             "userId": "User to access to your IBM system",
             "user_password": "Password of the user above",
-            "serverId": 1
+            "tenant": 1
         },
         {
             "hostname": "TEST.COM",
             "userId": "yourUser",
             "user_password": "pass",
-            "serverId": 2
+            "tenant": 2
         }
     ]
 }

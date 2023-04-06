@@ -13,7 +13,7 @@ public class FileOperations {
 
     public static Long readLastLogDate(ServerDefAS400 serverDefAS400) throws IOException {
         // IF the file don't exists return 0L (read logs from the beginning)
-        File LOCAL_STORAGE_FILE = new File("local_storage/last_log_date_" + serverDefAS400.getHostName() + "_" + serverDefAS400.getServerId() + ".log");
+        File LOCAL_STORAGE_FILE = new File("local_storage/last_log_date_" + serverDefAS400.getHostName() + "_" + serverDefAS400.getTenant() + ".log");
         if (!LOCAL_STORAGE_FILE.exists()) {
             if (!LOCAL_STORAGE.exists()) {
                 LOCAL_STORAGE.mkdir();
@@ -31,7 +31,7 @@ public class FileOperations {
     }
 
     public static void saveLastLogDate(Long last_date, ServerDefAS400 serverDefAS400) throws IOException {
-        File LOCAL_STORAGE_FILE = new File("local_storage/last_log_date_" + serverDefAS400.getHostName() + "_" + serverDefAS400.getServerId() + ".log");
+        File LOCAL_STORAGE_FILE = new File("local_storage/last_log_date_" + serverDefAS400.getHostName() + "_" + serverDefAS400.getTenant() + ".log");
         FileOutputStream fos = new FileOutputStream(LOCAL_STORAGE_FILE);
         String tmp = "" + last_date;
         fos.write(tmp.getBytes());
