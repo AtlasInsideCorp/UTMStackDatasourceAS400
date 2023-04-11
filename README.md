@@ -42,7 +42,7 @@ th following structure:
     ]
 }
 ~~~
-`serverId` is an Integer value of your choice, but must be unique for each server.
+`tenant` is s String value of your choice, but must be unique for each server.
 
 ### With docker
 To execute the tool with docker, you must create a docker container using this docker image `docker pull ghcr.io/atlasinsidecorp/as400jds:prod_${time_mark}`, 
