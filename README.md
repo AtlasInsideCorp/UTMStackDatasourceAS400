@@ -31,13 +31,13 @@ th following structure:
             "hostname": "your IBM system DNS Example: PUB400.COM",
             "userId": "User to access to your IBM system",
             "user_password": "Password of the user above",
-            "tenant": 1
+            "tenant": "Unique server identifier string, Example: Server1"
         },
         {
             "hostname": "TEST.COM",
             "userId": "yourUser",
             "user_password": "pass",
-            "tenant": 2
+            "tenant": "Server2"
         }
     ]
 }
@@ -57,7 +57,7 @@ Then, add the volume to docker compose config file, as follows:
 ~~~
 ...
 volumes:
-      - /utmstack/as400jds/:/local_storage/:rw
+      - /utmstack/as400jds/:/local_storage
 ...
 ~~~
 Start the docker compose.

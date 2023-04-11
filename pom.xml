@@ -6,7 +6,7 @@
 
     <groupId>com.utmstack</groupId>
     <artifactId>as400-extractor</artifactId>
-    <version>2.1.1</version>
+    <version>2.1.2</version>
     <packaging>jar</packaging>
     <name>AS400 Log Extractor</name>
     <description>Java Log Extractor for IBM AS400</description>

@@ -4,9 +4,9 @@ public class ServerDefAS400 {
     String hostname;
     String userId;
     String user_password;
-    Integer tenant;
+    String tenant;
 
-    public ServerDefAS400(String hostname, String userId, String user_password, Integer tenant) {
+    public ServerDefAS400(String hostname, String userId, String user_password, String tenant) {
         this.hostname = hostname;
         this.userId = userId;
         this.user_password = user_password;
@@ -38,11 +38,11 @@ public class ServerDefAS400 {
         this.user_password = user_password;
     }
 
-    public Integer getTenant() {
+    public String getTenant() {
         return tenant;
     }
 
-    public void setTenant(Integer tenant) {
+    public void setTenant(String tenant) {
         this.tenant = tenant;
     }
 
