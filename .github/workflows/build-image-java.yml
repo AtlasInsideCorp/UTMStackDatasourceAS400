@@ -62,7 +62,7 @@ jobs:
         with:
           context: /home/runner/work/UTMStackDatasourceAS400/UTMStackDatasourceAS400/
           push: true
-          tags: utmstack.azurecr.io/${{inputs.image_name}}:${{inputs.environment}}_${{ env.TAG }},utmstack.azurecr.io/${{inputs.image_name}}:${{inputs.environment}}
+          tags: utmstack.azurecr.io/${{inputs.image_name}}:v9,utmstack.azurecr.io/${{inputs.image_name}}:${{inputs.environment}}
 
       - uses: rickstaa/action-create-tag@v1
         with:
