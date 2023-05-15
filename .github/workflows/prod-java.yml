@@ -11,3 +11,6 @@ jobs:
       image_name: as400jds
       environment: prod
       branch: master
+      tag_message: "Automatic Tag Deployed to production"
+    secrets:
+      REGISTRY_KEY: ${{ secrets.REGISTRY_KEY }}
