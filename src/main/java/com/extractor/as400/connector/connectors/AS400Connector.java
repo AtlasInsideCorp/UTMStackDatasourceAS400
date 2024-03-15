@@ -5,7 +5,7 @@ import com.extractor.as400.interfaces.IConnector;
 import com.extractor.as400.models.ServerDefAS400;
 import com.ibm.as400.access.AS400;
 
-public class AS400Connector implements IConnector {
+public class AS400Connector {
     private static AS400 as400;
     private AS400 as400new;
 
@@ -33,30 +33,5 @@ public class AS400Connector implements IConnector {
             }
         }
         return as400new;
-    }
-
-    // This method is for factory use, singleton as400 connection
-    @Override
-    public Object getConnector() throws Exception {
-
-        if (as400 == null) {
-            // Connect to the AS400 server
-            as400 = new AS400(EnvironmentConfig.AS400_HOST_NAME);
-            as400.setGuiAvailable(false);
-            as400.setUserId(EnvironmentConfig.AS400_USER_ID);
-            as400.setPassword(EnvironmentConfig.AS400_USER_PASSWORD.toCharArray());
-            System.out.println("***** AS400 Initiated *****");
-        } else {
-            if (as400.isConnected() && as400.isConnectionAlive()) {
-                System.out.println("***** AS400 connection reused *****");
-            } else {
-                as400 = new AS400(EnvironmentConfig.AS400_HOST_NAME);
-                as400.setGuiAvailable(false);
-                as400.setUserId(EnvironmentConfig.AS400_USER_ID);
-                as400.setPassword(EnvironmentConfig.AS400_USER_PASSWORD.toCharArray());
-                System.out.println("***** AS400 trying with new connection *****");
-            }
-        }
-        return as400;
     }
 }

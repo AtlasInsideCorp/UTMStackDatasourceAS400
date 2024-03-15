@@ -1,5 +1,6 @@
 package com.extractor.as400.concurrent;
 
+import com.extractor.as400.config.Constants;
 import com.extractor.as400.config.EnvironmentConfig;
 import com.extractor.as400.connector.connectors.AS400Connector;
 import com.extractor.as400.file.FileOperations;
@@ -103,7 +104,7 @@ public class AS400ParallelTask implements Runnable {
                             AS400Message message = (AS400Message) messageList.nextElement();
                             // We look for a time change after we reach the batch size because, in some environments, a bunch of logs can have the same time mark
                             // So we save the time mark after time change when we reach the BATCH_SIZE
-                            if (batchCounter >= EnvironmentConfig.BATCH_SIZE && (calendarEND != message.getDate().getTimeInMillis())) {
+                            if (batchCounter >= Constants.BATCH_SIZE && (calendarEND != message.getDate().getTimeInMillis())) {
                                 if (calendarEND > calendarSTART) {
                                     FileOperations.saveLastLogDate(calendarEND, this.serverState.getServerDefAS400());
                                     batchCounter = 0;
@@ -111,7 +112,7 @@ public class AS400ParallelTask implements Runnable {
                             }
                             if (message.getDate().getTimeInMillis() > calendarSTART) {
                                 this.syslogServer.log(this.syslogServer.getConfig().getFacility(),
-                                        EnvironmentConfig.META_AS400_KEY + "[AS400Server=" + this.serverState.getServerDefAS400().getHostName() + "] "
+                                        Constants.META_AS400_KEY + "[AS400Server=" + this.serverState.getServerDefAS400().getHostName() + "] "
                                                 + "[AS400Tenant=" + this.serverState.getServerDefAS400().getTenant() + "] " + message.getText());
                                 calendarEND = message.getDate().getTimeInMillis();
                                 batchCounter++;

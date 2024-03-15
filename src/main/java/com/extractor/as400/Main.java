@@ -1,78 +1,48 @@
 package com.extractor.as400;
 
-import java.util.Iterator;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import com.extractor.as400.enums.InstallationOptions;
+import com.extractor.as400.exceptions.ExecutorAS400Exception;
+import com.extractor.as400.executors.ExecutorFactory;
+import com.extractor.as400.executors.impl.InstallExecutor;
+import com.extractor.as400.executors.impl.RunExecutor;
+import com.extractor.as400.executors.impl.UninstallExecutor;
+import com.extractor.as400.interfaces.IExecutor;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-import com.extractor.as400.concurrent.AS400ParallelTask;
-import com.extractor.as400.connector.connectors.SyslogConnector;
-import com.extractor.as400.models.ServerState;
 import com.extractor.as400.util.ConfigVerification;
-import org.productivity.java.syslog4j.SyslogIF;
+import com.extractor.as400.util.UsageHelp;
 
 
 public class Main {
+    private static final String CLASSNAME = "MainClass";
+    private static final Logger logger = LogManager.getLogger(Main.class);
 
     public static void main(String[] args) {
-        System.out.println("**************************************************************");
-        System.out.println("***** DATASOURCE AS400 VERSION " + ConfigVerification.API_VERSION + " *****");
-        System.out.println("**************************************************************");
-        // Check if environment is ok
-        if (ConfigVerification.isEnvironmentOk()) {
-
-            //First we create fixed thread pool executor with (Servers count) threads, one per server
-            ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(ConfigVerification.getServerStateList().size());
-
-            //Creating syslog connection (Destination)
-            SyslogIF syslogServer = null;
-            try {
-                syslogServer = (SyslogIF) SyslogConnector.getConnector();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        final String ctx = CLASSNAME + ".main";
+        logger.info("**************************************************************");
+        logger.info("***** DATASOURCE AS400 VERSION " + ConfigVerification.API_VERSION + " *****");
+        logger.info("**************************************************************");
 
 
-            //--------------------------------The concurrent ETL process is here-------------------------------------------
-            if (syslogServer != null) {
-                Iterator<ServerState> serverStateIterator;
-                for (serverStateIterator = ConfigVerification.getServerStateList().iterator(); serverStateIterator.hasNext(); ) {
-                    try {
-                        executor.execute(new AS400ParallelTask(serverStateIterator.next(), syslogServer));
-                    } catch (Exception e) {
-
-                    }
-                }
-
-                //Thread end is called
-                executor.shutdown();
-                //Wait 1 sec until termination
-                while (!executor.isTerminated()) {
-                    try {
-                        executor.awaitTermination(1, TimeUnit.SECONDS);
-                    } catch (Exception e) {
-
-                    }
-                }
-
-                // Finally, print summary of servers status
-                Iterator<ServerState> summaryIterator;
-                System.out.println("***** " + ConfigVerification.getActualDate() + " SERVERS SUMMARY *****");
-                for (summaryIterator = ConfigVerification.getServerStateList().iterator(); summaryIterator.hasNext(); ) {
-                    ServerState tmp = summaryIterator.next();
-                    System.out.println("***** " + tmp.toString() + " *****");
-                }
-                System.out.println("***** SERVERS SUMMARY (END) *****");
-            } else {
-                System.out.println("***** ERROR. For some reasons, the syslog server can't be created, please check your environment and network *****");
-            }
-        }
-        // Wait 5 seconds to have time to stop if using docker compose with restart always
+        args = new String[]{"-option=INSTALL","-host=lo"};
         try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
+            // Verify the args passed to the program -option=DEFAULT -host=localhost
+            if (UsageHelp.argsVerificationOk(args)) {
+                InstallationOptions opts = InstallationOptions.getByValue((String) UsageHelp.getParamsFromArgs().get("-option"));
 
+                // Calling the correct executor for this option
+                IExecutor iExecutor = new ExecutorFactory().getExecutor(opts);
+                if (iExecutor != null) {
+                    iExecutor.execute();
+                } else {
+                    throw new ExecutorAS400Exception ("Invalid value for param -option only INSTALL, UNINSTALL and RUN are allowed.");
+                }
+            } else {
+                logger.info(UsageHelp.usage());
+            }
+        } catch (ExecutorAS400Exception e) {
+            logger.error(ctx + ": " + e.getMessage());
         }
     }
-
 }
