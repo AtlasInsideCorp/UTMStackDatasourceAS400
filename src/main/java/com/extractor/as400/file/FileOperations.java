@@ -1,5 +1,6 @@
 package com.extractor.as400.file;
 
+import agent.Common.AuthResponse;
 import com.extractor.as400.models.ServerDefAS400;
 import com.extractor.as400.util.ConfigVerification;
 
@@ -10,10 +11,11 @@ import java.util.List;
 
 public class FileOperations {
     private static final File LOCAL_STORAGE = new File("local_storage");
+    private static final File LOCK_FILE = new File(LOCAL_STORAGE + "/collector.lock");
 
     public static Long readLastLogDate(ServerDefAS400 serverDefAS400) throws IOException {
         // IF the file don't exists return 0L (read logs from the beginning)
-        File LOCAL_STORAGE_FILE = new File("local_storage/last_log_date_" + serverDefAS400.getHostName() + "_" + serverDefAS400.getTenant() + ".log");
+        File LOCAL_STORAGE_FILE = new File(LOCAL_STORAGE + "/last_log_date_" + serverDefAS400.getHostName() + "_" + serverDefAS400.getTenant() + ".log");
         if (!LOCAL_STORAGE_FILE.exists()) {
             if (!LOCAL_STORAGE.exists()) {
                 LOCAL_STORAGE.mkdir();
@@ -87,5 +89,41 @@ public class FileOperations {
             }
         }
         return jsonFiles;
+    }
+
+    /**
+     * Method to get the content of the lock file (File that stores the information of the collector installed)
+     * If not created, then create the file and store the collector info
+     * If created, returns the collector info
+     * */
+    public static String readLockFile() throws IOException {
+        // IF the root folder don't exist then create it.
+
+        if (isLockFileCreated()) {
+            RandomAccessFile raf = new RandomAccessFile(LOCK_FILE, "r");
+            String str = raf.readLine();
+            raf.close();
+            return str;
+        }
+        return "";
+    }
+    /**
+     * Utility method to know if the lock file exists
+     * */
+    public static boolean isLockFileCreated() {
+        return LOCK_FILE.exists();
+    }
+
+    /**
+     * Utility method to create lock file
+     * */
+    public static void createLockFile(AuthResponse authResponse) throws IOException {
+        if (!LOCAL_STORAGE.exists()) {
+            LOCAL_STORAGE.mkdir();
+        }
+        FileOutputStream fos = new FileOutputStream(LOCK_FILE);
+        String str = "id:" + authResponse.getId() + "," + "key:" + authResponse.getKey();
+        fos.write(str.getBytes());
+        fos.close();
     }
 }

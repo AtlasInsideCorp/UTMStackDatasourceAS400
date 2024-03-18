@@ -7,11 +7,16 @@ import com.extractor.as400.executors.impl.InstallExecutor;
 import com.extractor.as400.executors.impl.RunExecutor;
 import com.extractor.as400.executors.impl.UninstallExecutor;
 import com.extractor.as400.interfaces.IExecutor;
+import com.extractor.as400.util.InetUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.extractor.as400.util.ConfigVerification;
 import com.extractor.as400.util.UsageHelp;
+
+import java.net.*;
+import java.util.Arrays;
+import java.util.Enumeration;
 
 
 public class Main {
@@ -24,11 +29,9 @@ public class Main {
         logger.info("***** DATASOURCE AS400 VERSION " + ConfigVerification.API_VERSION + " *****");
         logger.info("**************************************************************");
 
-
-        args = new String[]{"-option=INSTALL","-host=lo"};
         try {
-            // Verify the args passed to the program -option=DEFAULT -host=localhost
-            if (UsageHelp.argsVerificationOk(args)) {
+            // Verify the args passed to the program
+            if (UsageHelp.argsVerification(args)) {
                 InstallationOptions opts = InstallationOptions.getByValue((String) UsageHelp.getParamsFromArgs().get("-option"));
 
                 // Calling the correct executor for this option
@@ -36,7 +39,7 @@ public class Main {
                 if (iExecutor != null) {
                     iExecutor.execute();
                 } else {
-                    throw new ExecutorAS400Exception ("Invalid value for param -option only INSTALL, UNINSTALL and RUN are allowed.");
+                    throw new ExecutorAS400Exception ("Invalid value for param -option only " + Arrays.toString(Arrays.stream(InstallationOptions.values()).filter(f-> !f.equals(InstallationOptions.UNRECOGNIZED_OPTION)).toArray()) + " are allowed.");
                 }
             } else {
                 logger.info(UsageHelp.usage());
