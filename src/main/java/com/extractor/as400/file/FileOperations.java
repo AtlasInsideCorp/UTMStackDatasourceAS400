@@ -3,15 +3,25 @@ package com.extractor.as400.file;
 import agent.Common.AuthResponse;
 import com.extractor.as400.models.ServerDefAS400;
 import com.extractor.as400.util.ConfigVerification;
+import com.utmstack.grpc.jclient.config.Constants;
+import com.utmstack.grpc.util.StringUtil;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
+/**
+ * @author Freddy R. Laffita Almaguer
+ * Class used to perform all operations related to files across the api.
+ * Create or read files of configurations
+ * */
 public class FileOperations {
+
+    private static final String CLASSNAME = "FileOperations";
     private static final File LOCAL_STORAGE = new File("local_storage");
     private static final File LOCK_FILE = new File(LOCAL_STORAGE + "/collector.lock");
+
+    // Map used to store the collector information from lock file
+    private static Map<String, String> collectorInfo = new LinkedHashMap<>();
 
     public static Long readLastLogDate(ServerDefAS400 serverDefAS400) throws IOException {
         // IF the file don't exists return 0L (read logs from the beginning)
@@ -93,12 +103,10 @@ public class FileOperations {
 
     /**
      * Method to get the content of the lock file (File that stores the information of the collector installed)
-     * If not created, then create the file and store the collector info
+     * If not created, returns an empty string
      * If created, returns the collector info
-     * */
+     */
     public static String readLockFile() throws IOException {
-        // IF the root folder don't exist then create it.
-
         if (isLockFileCreated()) {
             RandomAccessFile raf = new RandomAccessFile(LOCK_FILE, "r");
             String str = raf.readLine();
@@ -107,23 +115,64 @@ public class FileOperations {
         }
         return "";
     }
+
     /**
      * Utility method to know if the lock file exists
-     * */
+     */
     public static boolean isLockFileCreated() {
         return LOCK_FILE.exists();
     }
 
     /**
      * Utility method to create lock file
-     * */
+     */
     public static void createLockFile(AuthResponse authResponse) throws IOException {
         if (!LOCAL_STORAGE.exists()) {
             LOCAL_STORAGE.mkdir();
         }
         FileOutputStream fos = new FileOutputStream(LOCK_FILE);
-        String str = "id:" + authResponse.getId() + "," + "key:" + authResponse.getKey();
+        String str = Constants.COLLECTOR_ID_HEADER + ":" + authResponse.getId() + "," + Constants.COLLECTOR_KEY_HEADER + ":" + authResponse.getKey();
         fos.write(str.getBytes());
         fos.close();
+    }
+    /**
+     * Utility method to remove lock file
+     */
+    public static boolean removeLockFile() {
+        return LOCK_FILE.delete();
+    }
+
+    /**
+     * Utility method to read the collector info from the lock file and store in memory using a map
+     * for latter use
+     * */
+    public static Map<String, String> getCollectorInfo() throws IOException {
+        final String ctx = CLASSNAME + ".getCollectorInfo";
+        if (collectorInfo.isEmpty()) {
+            try {
+                String content = readLockFile();
+                if (!StringUtil.hasText(content))
+                    throw new IOException("The collector configuration is empty, not found or can't be accessed.");
+                // Values are separated by comma
+                String[] values = content.split(",");
+
+                // Check the number of key-value pairs
+                if (values.length != 2)
+                    throw new IOException("The collector configuration is empty or malformed, please check the file: " + LOCK_FILE.getName());
+
+                // Get key-value pair
+                String idValues = values[0].substring(values[0].indexOf(":") + 1);
+                String keyValues = values[1].substring(values[1].indexOf(":") + 1);
+
+                collectorInfo.put(Constants.COLLECTOR_ID_HEADER, idValues);
+                collectorInfo.put(Constants.COLLECTOR_KEY_HEADER, keyValues);
+
+            } catch (IOException e) {
+                throw new IOException(ctx + ": " + e.getMessage());
+            } catch (IndexOutOfBoundsException e) {
+                throw new IOException("The collector configuration is empty or malformed, please check the file: " + LOCK_FILE.getName());
+            }
+        }
+        return collectorInfo;
     }
 }

@@ -1,5 +1,6 @@
 package com.extractor.as400;
 
+import com.extractor.as400.enums.AllowedParams;
 import com.extractor.as400.enums.InstallationOptions;
 import com.extractor.as400.exceptions.ExecutorAS400Exception;
 import com.extractor.as400.executors.ExecutorFactory;
@@ -32,14 +33,14 @@ public class Main {
         try {
             // Verify the args passed to the program
             if (UsageHelp.argsVerification(args)) {
-                InstallationOptions opts = InstallationOptions.getByValue((String) UsageHelp.getParamsFromArgs().get("-option"));
+                InstallationOptions opts = InstallationOptions.getByValue((String) UsageHelp.getParamsFromArgs().get(AllowedParams.PARAM_OPTION.get()));
 
                 // Calling the correct executor for this option
                 IExecutor iExecutor = new ExecutorFactory().getExecutor(opts);
                 if (iExecutor != null) {
                     iExecutor.execute();
                 } else {
-                    throw new ExecutorAS400Exception ("Invalid value for param -option only " + Arrays.toString(Arrays.stream(InstallationOptions.values()).filter(f-> !f.equals(InstallationOptions.UNRECOGNIZED_OPTION)).toArray()) + " are allowed.");
+                    throw new ExecutorAS400Exception ("Invalid value for param -option only " + Arrays.toString(AllowedParams.getAllowedParams()) + " are allowed.");
                 }
             } else {
                 logger.info(UsageHelp.usage());

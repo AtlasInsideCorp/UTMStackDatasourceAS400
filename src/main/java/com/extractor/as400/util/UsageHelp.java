@@ -22,7 +22,7 @@ public class UsageHelp {
     public static String usage() {
         return "Verify that the args passed to the program have this format: -option=RUN -host=localhost -port=50051 -connection-key=XXX" +
                 "\n*** Param -> Values ***" +
-                "\n  -option: Can be INSTALL, UNINSTALL and RUN" +
+                "\n  -option: Can be " + Arrays.toString(AllowedParams.getAllowedParams()) +
                 "\n  -host: Represents the host of the collector manager to connect to" +
                 "\n  -port: Represents the port of the collector manager to connect to" +
                 "\n  -connection-key: Represents your purchased key of your UTMStack instance";

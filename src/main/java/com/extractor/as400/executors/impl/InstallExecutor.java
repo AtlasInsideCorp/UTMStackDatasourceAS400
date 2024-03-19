@@ -20,12 +20,19 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 
+/**
+ * @author Freddy R. Laffita Almaguer
+ * Class used to perform the initial actions when installing the collector
+ * Register the collector and save configuration for latter use
+ * */
 public class InstallExecutor implements IExecutor {
     private static final String CLASSNAME = "InstallExecutor";
     private static final Logger logger = LogManager.getLogger(InstallExecutor.class);
 
     /**
-     * @throws ExecutorAS400Exception
+     * Method that execute the basic installation actions
+     * @throws ExecutorAS400Exception if the actions of register the collector or saving the collector info
+     * can't be executed; or the installation was already performed.
      */
     @Override
     public void execute() throws ExecutorAS400Exception {

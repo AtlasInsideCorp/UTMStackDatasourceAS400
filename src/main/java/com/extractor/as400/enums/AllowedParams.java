@@ -3,6 +3,10 @@ package com.extractor.as400.enums;
 import java.util.Arrays;
 import java.util.Optional;
 
+/**
+ * @author Freddy R. Laffita Almaguer
+ * Enum used to manage the allowed api parameters
+ * */
 public enum AllowedParams {
     // Important: Don't insert more params before this one
     UNRECOGNIZED_PARAM("UNRECOGNIZED_PARAM",0),
@@ -35,6 +39,9 @@ public enum AllowedParams {
         return this.eSplittBy;
     }
 
+    /**
+     * Method to get an instance of AllowedParams enum by its value
+     * */
     public static AllowedParams getByValue (String value) {
         try {
             Optional<AllowedParams> val = Arrays
@@ -45,5 +52,11 @@ public enum AllowedParams {
         } catch (java.util.NoSuchElementException ex) {
             return UNRECOGNIZED_PARAM;
         }
+    }
+    /**
+     * Method to get all the AllowedParams as object array, excluding UNRECOGNIZED_PARAM
+     * */
+    public static Object [] getAllowedParams () {
+        return Arrays.stream(InstallationOptions.values()).filter(f-> !f.equals(InstallationOptions.UNRECOGNIZED_OPTION)).toArray();
     }
 }
