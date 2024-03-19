@@ -76,11 +76,16 @@ public class UninstallExecutor implements IExecutor {
                 logger.info(ctx + ": Collector with key: " + info.get(Constants.COLLECTOR_KEY_HEADER) + ", was removed successfully.");
 
                 // Removing collector info
-                logger.info(ctx + ": Removing collector information from disk.");
+                logger.info(ctx + ": Removing collector information and configurations from disk.");
                 if(FileOperations.removeLockFile()) {
                     logger.info(ctx + ": Collector information was removed from disk.");
                 } else {
                     logger.info(ctx + ": Collector information can't be removed from disk, maybe the file is locked by other program.");
+                }
+                if(FileOperations.removeConfigs()) {
+                    logger.info(ctx + ": Collector configuration was removed from disk.");
+                } else {
+                    logger.info(ctx + ": Collector configuration can't be removed from disk, maybe the files are locked by other program.");
                 }
 
 

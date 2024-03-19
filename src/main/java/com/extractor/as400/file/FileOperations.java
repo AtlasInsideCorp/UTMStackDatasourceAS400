@@ -8,6 +8,7 @@ import com.utmstack.grpc.util.StringUtil;
 
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author Freddy R. Laffita Almaguer
@@ -140,6 +141,22 @@ public class FileOperations {
      */
     public static boolean removeLockFile() {
         return LOCK_FILE.delete();
+    }
+
+    /**
+     * Utility method used to remove servers configurations in .json format
+     * */
+    public static boolean removeConfigs () throws IOException {
+        // Get a list of all the JSON files in the directory
+        AtomicBoolean errors = new AtomicBoolean(true);
+        List<File> jsonFiles = getJsonFiles(LOCAL_STORAGE);
+        jsonFiles.stream().forEach(f->{
+            if (!f.delete()) {
+                errors.set(false);
+            }
+        });
+
+        return errors.get();
     }
 
     /**
