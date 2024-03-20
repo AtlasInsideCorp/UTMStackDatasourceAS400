@@ -1,10 +1,10 @@
 package com.extractor.as400.file;
 
-import agent.Common.AuthResponse;
+import com.extractor.as400.jsonparser.GenericParser;
+import com.extractor.as400.models.CollectorFileConfiguration;
 import com.extractor.as400.models.ServerDefAS400;
 import com.extractor.as400.util.ConfigVerification;
 import com.utmstack.grpc.jclient.config.Constants;
-import com.utmstack.grpc.util.StringUtil;
 
 import java.io.*;
 import java.util.*;
@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author Freddy R. Laffita Almaguer
  * Class used to perform all operations related to files across the api.
  * Create or read files of configurations
- * */
+ */
 public class FileOperations {
 
     private static final String CLASSNAME = "FileOperations";
@@ -110,9 +110,16 @@ public class FileOperations {
     public static String readLockFile() throws IOException {
         if (isLockFileCreated()) {
             RandomAccessFile raf = new RandomAccessFile(LOCK_FILE, "r");
-            String str = raf.readLine();
+
+            String inputLine;
+            StringBuilder stb = new StringBuilder();
+
+            while ((inputLine = raf.readLine()) != null) {
+                stb.append(inputLine + "\n");
+            }
+
             raf.close();
-            return str;
+            return stb.toString();
         }
         return "";
     }
@@ -127,15 +134,18 @@ public class FileOperations {
     /**
      * Utility method to create lock file
      */
-    public static void createLockFile(AuthResponse authResponse) throws IOException {
+    public static void createLockFile(CollectorFileConfiguration config) throws IOException {
         if (!LOCAL_STORAGE.exists()) {
             LOCAL_STORAGE.mkdir();
         }
         FileOutputStream fos = new FileOutputStream(LOCK_FILE);
-        String str = Constants.COLLECTOR_ID_HEADER + ":" + authResponse.getId() + "," + Constants.COLLECTOR_KEY_HEADER + ":" + authResponse.getKey();
-        fos.write(str.getBytes());
+        // Parsing structure to JSON before save to file
+        GenericParser gp = new GenericParser();
+        String infoData = gp.parseTo(config);
+        fos.write(infoData.getBytes());
         fos.close();
     }
+
     /**
      * Utility method to remove lock file
      */
@@ -145,12 +155,12 @@ public class FileOperations {
 
     /**
      * Utility method used to remove servers configurations in .json format
-     * */
-    public static boolean removeConfigs () throws IOException {
+     */
+    public static boolean removeConfigs() throws IOException {
         // Get a list of all the JSON files in the directory
         AtomicBoolean errors = new AtomicBoolean(true);
         List<File> jsonFiles = getJsonFiles(LOCAL_STORAGE);
-        jsonFiles.stream().forEach(f->{
+        jsonFiles.stream().forEach(f -> {
             if (!f.delete()) {
                 errors.set(false);
             }
@@ -162,32 +172,22 @@ public class FileOperations {
     /**
      * Utility method to read the collector info from the lock file and store in memory using a map
      * for latter use
-     * */
+     */
     public static Map<String, String> getCollectorInfo() throws IOException {
         final String ctx = CLASSNAME + ".getCollectorInfo";
         if (collectorInfo.isEmpty()) {
             try {
-                String content = readLockFile();
-                if (!StringUtil.hasText(content))
-                    throw new IOException("The collector configuration is empty, not found or can't be accessed.");
-                // Values are separated by comma
-                String[] values = content.split(",");
+                // Parsing JSON Servers structure to handler class
+                GenericParser gp = new GenericParser();
+                CollectorFileConfiguration conf = gp.parseFrom(FileOperations.readLockFile(), CollectorFileConfiguration.class, new CollectorFileConfiguration());
 
-                // Check the number of key-value pairs
-                if (values.length != 2)
-                    throw new IOException("The collector configuration is empty or malformed, please check the file: " + LOCK_FILE.getName());
-
-                // Get key-value pair
-                String idValues = values[0].substring(values[0].indexOf(":") + 1);
-                String keyValues = values[1].substring(values[1].indexOf(":") + 1);
-
-                collectorInfo.put(Constants.COLLECTOR_ID_HEADER, idValues);
-                collectorInfo.put(Constants.COLLECTOR_KEY_HEADER, keyValues);
+                collectorInfo.put(Constants.COLLECTOR_ID_HEADER, String.valueOf(conf.getId()));
+                collectorInfo.put(Constants.COLLECTOR_KEY_HEADER, conf.getKey());
 
             } catch (IOException e) {
                 throw new IOException(ctx + ": " + e.getMessage());
-            } catch (IndexOutOfBoundsException e) {
-                throw new IOException("The collector configuration is empty or malformed, please check the file: " + LOCK_FILE.getName());
+            } catch (Exception e) {
+                throw new IOException(ctx + "The collector configuration is empty or malformed, please check the file: " + LOCK_FILE.getName());
             }
         }
         return collectorInfo;

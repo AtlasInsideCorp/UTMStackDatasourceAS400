@@ -7,6 +7,7 @@ import com.extractor.as400.exceptions.ExecutorAS400Exception;
 import com.extractor.as400.exceptions.InetUtilException;
 import com.extractor.as400.file.FileOperations;
 import com.extractor.as400.interfaces.IExecutor;
+import com.extractor.as400.models.CollectorFileConfiguration;
 import com.extractor.as400.util.ConfigVerification;
 import com.extractor.as400.util.InetUtil;
 import com.extractor.as400.util.UsageHelp;
@@ -67,7 +68,8 @@ public class InstallExecutor implements IExecutor {
                 AuthResponse response = serv.registerCollector(req);
 
                 // Saving collector info in the lock file
-                FileOperations.createLockFile(response);
+                CollectorFileConfiguration config = new CollectorFileConfiguration(response, agentManagerHost, Integer.parseInt(agentManagerPort));
+                FileOperations.createLockFile(config);
                 logger.info(ctx + ": Collector registered successfully.");
 
             } catch (java.lang.NumberFormatException e) {
