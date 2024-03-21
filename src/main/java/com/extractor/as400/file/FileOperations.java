@@ -4,7 +4,10 @@ import com.extractor.as400.jsonparser.GenericParser;
 import com.extractor.as400.models.CollectorFileConfiguration;
 import com.extractor.as400.models.ServerDefAS400;
 import com.extractor.as400.util.ConfigVerification;
+import com.extractor.as400.config.AS400ExtractorConstants;
 import com.utmstack.grpc.jclient.config.Constants;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.*;
 import java.util.*;
@@ -18,6 +21,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class FileOperations {
 
     private static final String CLASSNAME = "FileOperations";
+    private static final Logger logger = LogManager.getLogger(FileOperations.class);
     private static final File LOCAL_STORAGE = new File("local_storage");
     private static final File LOCK_FILE = new File(LOCAL_STORAGE + "/collector.lock");
 
@@ -52,6 +56,7 @@ public class FileOperations {
     }
 
     public static String readServersFile() throws IOException {
+        final String ctx = CLASSNAME + ".readServersFile";
         File configFile = getConfigFile();
         if (configFile != null) {
             RandomAccessFile raf = new RandomAccessFile(configFile, "r");
@@ -64,19 +69,18 @@ public class FileOperations {
             }
 
             raf.close();
-            System.out.println("***** " + ConfigVerification.getActualDate() + " Using configuration file: " + configFile.getName() + " *****");
+            logger.info("***** " + ConfigVerification.getActualDate() + " Using configuration file: " + configFile.getName() + " *****");
             return stb.toString();
         } else {
-            throw new IOException("Unable to locate AS400 configuration file under local_storage folder. Check if you " +
+            throw new IOException(ctx + "Unable to locate AS400 configuration file under local_storage folder. Check if you " +
                     "created a valid .json file.");
         }
     }
 
     // Method to get the last Configuration file (Servers.json)
     public static File getConfigFile() throws IOException {
-        String jsonFolderPath = "local_storage";
         // Get a list of all the JSON files in the directory
-        List<File> jsonFiles = getJsonFiles(new File(jsonFolderPath));
+        List<File> jsonFiles = getJsonFiles(LOCAL_STORAGE);
         if (jsonFiles.size() > 0) {
             // Sort the list of JSON files by modification time, in descending order
             jsonFiles.sort(Comparator.comparing(File::lastModified).reversed());
@@ -183,6 +187,8 @@ public class FileOperations {
 
                 collectorInfo.put(Constants.COLLECTOR_ID_HEADER, String.valueOf(conf.getId()));
                 collectorInfo.put(Constants.COLLECTOR_KEY_HEADER, conf.getKey());
+                collectorInfo.put(AS400ExtractorConstants.COLLECTOR_MANAGER_HOST, conf.getHostCollectorManager());
+                collectorInfo.put(AS400ExtractorConstants.COLLECTOR_MANAGER_PORT, String.valueOf(conf.getPortCollectorManager()));
 
             } catch (IOException e) {
                 throw new IOException(ctx + ": " + e.getMessage());

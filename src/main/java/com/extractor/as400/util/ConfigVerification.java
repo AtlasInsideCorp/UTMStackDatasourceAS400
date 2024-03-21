@@ -1,12 +1,12 @@
 package com.extractor.as400.util;
 
-import com.extractor.as400.config.EnvironmentConfig;
-import com.extractor.as400.enums.EnvironmentsEnum;
 import com.extractor.as400.file.FileOperations;
 import com.extractor.as400.jsonparser.GenericParser;
 import com.extractor.as400.models.ServerConfigAS400;
 import com.extractor.as400.models.ServerDefAS400;
 import com.extractor.as400.models.ServerState;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -14,11 +14,14 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+/**
+ * @author Freddy R. Laffita Almaguer.
+ * This class is used to get the servers configuration from Servers.json file, create the list of as400 servers, perform some
+ * tests and holds some utility methods used across the application
+ */
 public class ConfigVerification {
-    /**
-     * This class is used to get the servers configuration from Servers.json file, create the list of as400 servers, perform some
-     * tests and holds some utility methods used across the application
-     */
+    private static final String CLASSNAME = "ConfigVerification";
+    private static final Logger logger = LogManager.getLogger(ConfigVerification.class);
     // To hold all AS400 servers config
     private static ServerConfigAS400 serverConfigAS400;
     // To hold all servers with it state
@@ -28,54 +31,23 @@ public class ConfigVerification {
     public static final String API_VERSION = API_VERSION_SHORT + " - 13-03-24 14:48:15";
 
     public static boolean isEnvironmentOk() {
-        if (EnvironmentConfig.SYSLOG_HOST == null || EnvironmentConfig.SYSLOG_HOST.compareTo("") == 0 ||
-            EnvironmentConfig.SYSLOG_PORT == 0 || EnvironmentConfig.SYSLOG_PROTOCOL == null ||
-            EnvironmentConfig.SYSLOG_PROTOCOL.compareTo("") == 0 ) {
-            System.out.println("ConfigVerification.isEnvironmentOk(): Environment configuration error");
-            System.out.println("\n *********** Check your environment configuration, some variables are not configured correctly ***********" +
-                    "\n * /local_storage/Servers.json file is required, can't be empty and must be a valid JSON" +
-                    "\n * " +
-                    EnvironmentsEnum.SYSLOG_HOST +
-                    " is required, has to be defined and can't be empty" +
-                    "\n * " +
-                    EnvironmentsEnum.SYSLOG_PORT +
-                    " is required, has to be defined and can't be empty or 0" +
-                    "\n * " +
-                    EnvironmentsEnum.SYSLOG_PROTOCOL +
-                    " is required, has to be defined and can't be empty" +
-                    "\n *********************************************************************************************************");
-            return false;
-        } else {
+        final String ctx = CLASSNAME + ".isEnvironmentOk";
             try {
                 // Parsing JSON Servers structure to handler class
                 GenericParser gp = new GenericParser();
                 serverConfigAS400 = gp.parseFrom(FileOperations.readServersFile(), ServerConfigAS400.class, new ServerConfigAS400());
                 generateServerStateList();
                 if (isServerConfigDuplicated()) {
-                    System.out.println("ConfigVerification.isEnvironmentOk(): Environment configuration error");
-                    System.out.println("\n *********** Check your environment configuration, some variables are not configured correctly ***********" +
+                    logger.error(ctx + ": Environment configuration error");
+                    logger.error(ctx + " *********** Check your environment configuration, some variables are not configured correctly ***********" +
                             "\n * In /local_storage/Servers.json, can't be duplicated servers -> (same hostname and tenant)");
                     return false;
                 }
                return true;
             } catch (Exception ex) {
-                System.out.println("ConfigVerification.isEnvironmentOk(): Environment configuration error");
-                System.out.println("\n *********** Check your environment configuration, some variables are not configured correctly ***********" +
-                        "\n * /local_storage/Servers.json file is required, can't be empty and must be a valid JSON" +
-                        "\n * " +
-                        EnvironmentsEnum.SYSLOG_HOST +
-                        " is required, has to be defined and can't be empty" +
-                        "\n * " +
-                        EnvironmentsEnum.SYSLOG_PORT +
-                        " is required, has to be defined and can't be empty or 0" +
-                        "\n * " +
-                        EnvironmentsEnum.SYSLOG_PROTOCOL +
-                        " is required, has to be defined and can't be empty" +
-                        "\n * Error: " + ex.getMessage() +
-                        "\n *********************************************************************************************************");
+                logger.error(UsageHelp.usage());
                 return false;
             }
-        }
     }
 
     // Method to generate the server list with state. Is static to always access the same elements when using threads

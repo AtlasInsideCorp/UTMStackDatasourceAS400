@@ -3,11 +3,14 @@ package com.extractor.as400.executors.impl;
 import agent.CollectorOuterClass.CollectorModule;
 import agent.CollectorOuterClass.CollectorResponse;
 import agent.CollectorOuterClass.CollectorDelete;
+import com.extractor.as400.enums.AllowedParamsEnum;
+import com.extractor.as400.enums.ValidationTypeEnum;
 import com.extractor.as400.exceptions.ExecutorAS400Exception;
 import com.extractor.as400.file.FileOperations;
 import com.extractor.as400.interfaces.IExecutor;
 import com.extractor.as400.util.ConfigVerification;
 import com.extractor.as400.util.UsageHelp;
+import com.extractor.as400.util.Validations;
 import com.utmstack.grpc.connection.GrpcConnection;
 import com.utmstack.grpc.exception.CollectorServiceGrpcException;
 import com.utmstack.grpc.exception.GrpcConnectionException;
@@ -43,20 +46,16 @@ public class UninstallExecutor implements IExecutor {
         if (FileOperations.isLockFileCreated()) {
             try {
                 // Begin gRPC connection
-                String agentManagerHost = (String) UsageHelp.getParamsFromArgs().get("-host");
-                String agentManagerPort = (String) UsageHelp.getParamsFromArgs().get("-port");
-                String connectionKey = (String) UsageHelp.getParamsFromArgs().get("-connection-key");
+                String collectorManagerHost = (String) UsageHelp.getParamsFromArgs().get(AllowedParamsEnum.PARAM_HOST.get());
+                String collectorManagerPort = (String) UsageHelp.getParamsFromArgs().get(AllowedParamsEnum.PARAM_PORT.get());
+                String connectionKey = (String) UsageHelp.getParamsFromArgs().get(AllowedParamsEnum.PARAM_CONNECTION_KEY.get());
 
                 // Set the authentication needed for unregister a collector
                 KeyStore.setConnectionKey(connectionKey);
                 // Connectiong to gRPC server
                 GrpcConnection con = new GrpcConnection();
-                try {
-                    con.connectTo(agentManagerHost,
-                            Integer.parseInt(agentManagerPort));
-                } catch (java.lang.NumberFormatException e) {
-                    throw new NumberFormatException("Invalid port value -> " + e.getMessage());
-                }
+                    con.connectTo(collectorManagerHost,
+                            Validations.validateNumber(collectorManagerPort, ValidationTypeEnum.PORT));
 
                 // Delete request
                 Map<String, String> info = FileOperations.getCollectorInfo();
@@ -67,12 +66,9 @@ public class UninstallExecutor implements IExecutor {
 
                 // Instantiating the collector service
                 CollectorService serv = new CollectorService(con);
-                try {
-                    int id = Integer.parseInt(info.get(Constants.COLLECTOR_ID_HEADER));
+                    int id = Validations.validateNumber(info.get(Constants.COLLECTOR_ID_HEADER),ValidationTypeEnum.ID);
                     CollectorResponse response = serv.deleteCollector(req, id);
-                } catch (java.lang.NumberFormatException e) {
-                    throw new NumberFormatException("Invalid id value -> " + e.getMessage());
-                }
+
                 logger.info(ctx + ": Collector with key: " + info.get(Constants.COLLECTOR_KEY_HEADER) + ", was removed successfully.");
 
                 // Removing collector info
@@ -95,7 +91,7 @@ public class UninstallExecutor implements IExecutor {
                 throw new ExecutorAS400Exception(ctx + ": Error saving the collector installation information -> " + e.getMessage());
             }
         } else {
-            throw new ExecutorAS400Exception(ctx + ": Other installation was detected, please uninstall the collector before install again.");
+            throw new ExecutorAS400Exception(ctx + ": Installation wasn't detected, please install the collector before trying to uninstall.");
         }
     }
 }

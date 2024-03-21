@@ -3,7 +3,7 @@ package com.extractor.as400.enums;
 import java.util.Arrays;
 import java.util.Optional;
 
-public enum InstallationOptions {
+public enum InstallationOptionsEnum {
     RUN("RUN"),
     INSTALL("INSTALL"),
     UNINSTALL("UNINSTALL"),
@@ -11,7 +11,7 @@ public enum InstallationOptions {
 
     private String eValue;
 
-    InstallationOptions(String eValue) {
+    InstallationOptionsEnum(String eValue) {
         this.eValue = eValue;
     }
 
@@ -19,10 +19,10 @@ public enum InstallationOptions {
         return this.eValue;
     }
 
-    public static InstallationOptions getByValue (String value) {
+    public static InstallationOptionsEnum getByValue (String value) {
         try {
-            Optional<InstallationOptions> val = Arrays
-                    .stream(InstallationOptions.values())
+            Optional<InstallationOptionsEnum> val = Arrays
+                    .stream(InstallationOptionsEnum.values())
                     .filter(repVal -> (repVal.get()).equals(value))
                     .findFirst();
             return val.get();

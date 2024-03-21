@@ -1,23 +1,17 @@
 package com.extractor.as400;
 
-import com.extractor.as400.enums.AllowedParams;
-import com.extractor.as400.enums.InstallationOptions;
+import com.extractor.as400.enums.AllowedParamsEnum;
+import com.extractor.as400.enums.InstallationOptionsEnum;
 import com.extractor.as400.exceptions.ExecutorAS400Exception;
 import com.extractor.as400.executors.ExecutorFactory;
-import com.extractor.as400.executors.impl.InstallExecutor;
-import com.extractor.as400.executors.impl.RunExecutor;
-import com.extractor.as400.executors.impl.UninstallExecutor;
 import com.extractor.as400.interfaces.IExecutor;
-import com.extractor.as400.util.InetUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.extractor.as400.util.ConfigVerification;
 import com.extractor.as400.util.UsageHelp;
 
-import java.net.*;
 import java.util.Arrays;
-import java.util.Enumeration;
 
 
 public class Main {
@@ -33,14 +27,14 @@ public class Main {
         try {
             // Verify the args passed to the program
             if (UsageHelp.argsVerification(args)) {
-                InstallationOptions opts = InstallationOptions.getByValue((String) UsageHelp.getParamsFromArgs().get(AllowedParams.PARAM_OPTION.get()));
+                InstallationOptionsEnum opts = InstallationOptionsEnum.getByValue((String) UsageHelp.getParamsFromArgs().get(AllowedParamsEnum.PARAM_OPTION.get()));
 
                 // Calling the correct executor for this option
                 IExecutor iExecutor = new ExecutorFactory().getExecutor(opts);
                 if (iExecutor != null) {
                     iExecutor.execute();
                 } else {
-                    throw new ExecutorAS400Exception ("Invalid value for param -option only " + Arrays.toString(AllowedParams.getAllowedParams()) + " are allowed.");
+                    throw new ExecutorAS400Exception ("Invalid value for param -option only " + Arrays.toString(AllowedParamsEnum.getAllowedParams()) + " are allowed.");
                 }
             } else {
                 logger.info(UsageHelp.usage());

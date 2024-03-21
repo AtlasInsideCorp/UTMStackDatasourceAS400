@@ -1,7 +1,7 @@
 package com.extractor.as400.util;
 
 
-import com.extractor.as400.enums.AllowedParams;
+import com.extractor.as400.enums.AllowedParamsEnum;
 import com.utmstack.grpc.util.StringUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -22,7 +22,7 @@ public class UsageHelp {
     public static String usage() {
         return "Verify that the args passed to the program have this format: -option=RUN -host=localhost -port=50051 -connection-key=XXX" +
                 "\n*** Param -> Values ***" +
-                "\n  -option: Can be " + Arrays.toString(AllowedParams.getAllowedParams()) +
+                "\n  -option: Can be " + Arrays.toString(AllowedParamsEnum.getAllowedParams()) +
                 "\n  -host: Represents the host of the collector manager to connect to" +
                 "\n  -port: Represents the port of the collector manager to connect to" +
                 "\n  -connection-key: Represents your purchased key of your UTMStack instance";
@@ -48,7 +48,7 @@ public class UsageHelp {
         StringBuilder paramErrors = new StringBuilder();
 
         try {
-            int allowedParamsCount = AllowedParams.values().length;
+            int allowedParamsCount = AllowedParamsEnum.values().length;
             if (args.length != allowedParamsCount - 1) {
                 logger.error(ctx + "The number of params is not correct: Expected -> " + allowedParamsCount + ", Found -> " + args.length);
                 return false;
@@ -64,8 +64,8 @@ public class UsageHelp {
                     String valueParam = arg.substring(splitPosition + 1);
 
                     // Begin parameters checks
-                    AllowedParams allowedParam = AllowedParams.getByValue(findParam);
-                    if (allowedParam.equals(AllowedParams.UNRECOGNIZED_PARAM)) {
+                    AllowedParamsEnum allowedParam = AllowedParamsEnum.getByValue(findParam);
+                    if (allowedParam.equals(AllowedParamsEnum.UNRECOGNIZED_PARAM)) {
                         paramErrors.append("\nUnrecognized parameter -> ").append(findParam).append(", please check.");
                         verify.set(false);
                     } else {
@@ -80,7 +80,7 @@ public class UsageHelp {
                 }
             }
             // Finally, verify that all the params are present
-            Arrays.stream(AllowedParams.values()).forEach(p -> {
+            Arrays.stream(AllowedParamsEnum.values()).forEach(p -> {
                 if (p.ordinal() > 0 && !params.containsKey(p.get())) {
                     paramErrors.append("\nThe parameter -> ").append(p.get()).append(", is missing, please check.");
                     verify.set(false);

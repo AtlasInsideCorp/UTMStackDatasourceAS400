@@ -1,44 +1,62 @@
 package com.extractor.as400.concurrent;
 
-import com.extractor.as400.config.Constants;
-import com.extractor.as400.config.EnvironmentConfig;
+import com.extractor.as400.config.AS400ExtractorConstants;
 import com.extractor.as400.connector.connectors.AS400Connector;
 import com.extractor.as400.file.FileOperations;
 import com.extractor.as400.models.ServerState;
 import com.extractor.as400.util.ConfigVerification;
+import com.extractor.as400.util.ThreadsUtil;
 import com.ibm.as400.access.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.productivity.java.syslog4j.SyslogIF;
 
 import java.util.Enumeration;
 
-public class AS400ParallelTask implements Runnable {
-    /**
-     * This class is used to execute log extraction from as400 in separated thread
-     * Using this class you can extract logs simultaneously from many as400 systems
-     *
-     * @see Thread#run()
-     */
+/**
+ * @author Freddy R. Laffita Almaguer
+ * This class is used to execute log extraction from as400 in separated thread
+ * Using this class you can extract logs simultaneously from many as400 systems
+ * @see Thread#run()
+ */
+public class AS400SyslogParallelTask implements Runnable {
+    private static final String CLASSNAME = "AS400SyslogParallelTask";
+    private static final Logger logger = LogManager.getLogger(AS400SyslogParallelTask.class);
     // Represents the server as400 that you are about to extract logs from
-    ServerState serverState;
+    ServerState serverState = ConfigVerification.getServerStateList().get(0);
     // Syslog server (Destination)
     SyslogIF syslogServer;
 
-    public AS400ParallelTask(ServerState serverState, SyslogIF syslogServer) {
+    public AS400SyslogParallelTask() {
+    }
+
+    public AS400SyslogParallelTask withServerState(ServerState serverState) {
         this.serverState = serverState;
+        return this;
+    }
+
+    public AS400SyslogParallelTask withSyslogIF(SyslogIF syslogServer) {
         this.syslogServer = syslogServer;
+        return this;
+    }
+
+    public AS400SyslogParallelTask build() {
+        return this;
     }
 
     @Override
     public void run() {
+        final String ctx = CLASSNAME + ".run";
         StringBuffer logsBuffer = new StringBuffer();
         ServerState serverState;
         String stateInfo;
-        // When the process launch, we first change the state to RUNNING
-        ConfigVerification.changeServerStateStatus(this.serverState, "RUNNING");
-        serverState = ConfigVerification.getServerStateStatus(this.serverState);
-        stateInfo = serverState != null ? serverState.toString() : this.serverState.toString();
-        logsBuffer.append("***** ").append(ConfigVerification.getActualDate()).append(" Log extraction report from as400 ").append(stateInfo).append(" *****\n");
+
         try {
+            // When the process launch, we first change the state to RUNNING
+            ConfigVerification.changeServerStateStatus(this.serverState, "RUNNING");
+            serverState = ConfigVerification.getServerStateStatus(this.serverState);
+            stateInfo = serverState != null ? serverState.toString() : this.serverState.toString();
+            logsBuffer.append("***** ").append(ConfigVerification.getActualDate()).append(" Log extraction report from as400 ").append(stateInfo).append(" *****\n");
 
             serverState = ConfigVerification.getServerStateStatus(this.serverState);
             stateInfo = serverState != null ? serverState.toString() : this.serverState.toString();
@@ -104,7 +122,7 @@ public class AS400ParallelTask implements Runnable {
                             AS400Message message = (AS400Message) messageList.nextElement();
                             // We look for a time change after we reach the batch size because, in some environments, a bunch of logs can have the same time mark
                             // So we save the time mark after time change when we reach the BATCH_SIZE
-                            if (batchCounter >= Constants.BATCH_SIZE && (calendarEND != message.getDate().getTimeInMillis())) {
+                            if (batchCounter >= AS400ExtractorConstants.BATCH_SIZE && (calendarEND != message.getDate().getTimeInMillis())) {
                                 if (calendarEND > calendarSTART) {
                                     FileOperations.saveLastLogDate(calendarEND, this.serverState.getServerDefAS400());
                                     batchCounter = 0;
@@ -112,7 +130,7 @@ public class AS400ParallelTask implements Runnable {
                             }
                             if (message.getDate().getTimeInMillis() > calendarSTART) {
                                 this.syslogServer.log(this.syslogServer.getConfig().getFacility(),
-                                        Constants.META_AS400_KEY + "[AS400Server=" + this.serverState.getServerDefAS400().getHostName() + "] "
+                                        AS400ExtractorConstants.META_AS400_KEY + "[AS400Server=" + this.serverState.getServerDefAS400().getHostName() + "] "
                                                 + "[AS400Tenant=" + this.serverState.getServerDefAS400().getTenant() + "] " + message.getText());
                                 calendarEND = message.getDate().getTimeInMillis();
                                 batchCounter++;
@@ -136,12 +154,12 @@ public class AS400ParallelTask implements Runnable {
                         serverState = ConfigVerification.getServerStateStatus(this.serverState);
                         stateInfo = serverState != null ? serverState.toString() : this.serverState.toString();
                         logsBuffer.append("***** ").append(ConfigVerification.getActualDate()).append(" Process Result ").append(stateInfo).append(" *****\n");
-                        System.out.println(logsBuffer);
+                        logger.info(logsBuffer);
                         Thread.sleep(5000);
 
                         // End access to history log
                     } else {
-                        System.out.println(logsBuffer);
+                        logger.info(logsBuffer);
                     }
                     // End authentication attempt
                 } else {
@@ -149,7 +167,7 @@ public class AS400ParallelTask implements Runnable {
                     serverState = ConfigVerification.getServerStateStatus(this.serverState);
                     stateInfo = serverState != null ? serverState.toString() : this.serverState.toString();
                     logsBuffer.append("***** ").append(ConfigVerification.getActualDate()).append(" ERROR authentication attempt failed to -> ").append(stateInfo).append(" please, check you configuration at Servers.json file, or check the AS400 system, it may be unavailable at this moment *****\n");
-                    System.out.println(logsBuffer);
+                    logger.info(logsBuffer);
                 }
                 // End of ping test
             } else {
@@ -164,8 +182,12 @@ public class AS400ParallelTask implements Runnable {
                 logsBuffer.append("*** - If your AS400 system is using default ports, check if the following ports are open: 8473, 8474, 8475, 8472, 8471, 446, 8470, 8476, 9473, 9474, 9475, 9472, 9471, 448, 9470, 9476 *****\n");
                 logsBuffer.append("*** - Check if you have access from the current IP to the AS400 system by ports above *****\n");
                 logsBuffer.append("*** - Enable the failing services *****\n");
-                System.out.println(logsBuffer);
+                logger.info(logsBuffer);
             }
+
+            //-----------------------------------------------------------------------------//
+            // Wait some time before begin again
+            ThreadsUtil.sleepCurrentThread(30);
 
         } catch (Exception e) {
             ConfigVerification.changeServerStateStatus(this.serverState, "ERROR");
@@ -173,8 +195,10 @@ public class AS400ParallelTask implements Runnable {
             stateInfo = serverState != null ? serverState.toString() : this.serverState.toString();
             logsBuffer.append("***** ").append(ConfigVerification.getActualDate()).append(" ERROR getting data from as400 ").append(stateInfo).append(" *****\n");
             logsBuffer.append("***** Unable to access: ").append(e.getMessage()).append(" *****\n");
-            System.out.println(logsBuffer);
-            e.printStackTrace();
+            logger.error(logsBuffer);
+
+            // Wait some time before begin again
+            ThreadsUtil.sleepCurrentThread(30);
             Thread.currentThread().interrupt();
         }
     }

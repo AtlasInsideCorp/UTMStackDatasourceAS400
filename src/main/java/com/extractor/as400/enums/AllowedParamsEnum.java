@@ -7,7 +7,7 @@ import java.util.Optional;
  * @author Freddy R. Laffita Almaguer
  * Enum used to manage the allowed api parameters
  * */
-public enum AllowedParams {
+public enum AllowedParamsEnum {
     // Important: Don't insert more params before this one
     UNRECOGNIZED_PARAM("UNRECOGNIZED_PARAM",0),
     //----------------------------------------------------------
@@ -27,7 +27,7 @@ public enum AllowedParams {
     // 2 = Used for Key=Value pairs
     private int eSplittBy;
 
-    AllowedParams(String eValue, int eSplittBy) {
+    AllowedParamsEnum(String eValue, int eSplittBy) {
         this.eValue = eValue;
         this.eSplittBy = eSplittBy;
     }
@@ -40,12 +40,12 @@ public enum AllowedParams {
     }
 
     /**
-     * Method to get an instance of AllowedParams enum by its value
+     * Method to get an instance of AllowedParamsEnum enum by its value
      * */
-    public static AllowedParams getByValue (String value) {
+    public static AllowedParamsEnum getByValue (String value) {
         try {
-            Optional<AllowedParams> val = Arrays
-                    .stream(AllowedParams.values())
+            Optional<AllowedParamsEnum> val = Arrays
+                    .stream(AllowedParamsEnum.values())
                     .filter(repVal -> (repVal.get()).equals(value))
                     .findFirst();
             return val.get();
@@ -54,9 +54,9 @@ public enum AllowedParams {
         }
     }
     /**
-     * Method to get all the AllowedParams as object array, excluding UNRECOGNIZED_PARAM
+     * Method to get all the AllowedParamsEnum as object array, excluding UNRECOGNIZED_PARAM
      * */
     public static Object [] getAllowedParams () {
-        return Arrays.stream(InstallationOptions.values()).filter(f-> !f.equals(InstallationOptions.UNRECOGNIZED_OPTION)).toArray();
+        return Arrays.stream(InstallationOptionsEnum.values()).filter(f-> !f.equals(InstallationOptionsEnum.UNRECOGNIZED_OPTION)).toArray();
     }
 }

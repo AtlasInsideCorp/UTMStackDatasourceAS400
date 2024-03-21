@@ -3,6 +3,8 @@ package com.extractor.as400.executors.impl;
 import agent.CollectorOuterClass.RegisterRequest;
 import agent.CollectorOuterClass.CollectorModule;
 import agent.Common.AuthResponse;
+import com.extractor.as400.enums.AllowedParamsEnum;
+import com.extractor.as400.enums.ValidationTypeEnum;
 import com.extractor.as400.exceptions.ExecutorAS400Exception;
 import com.extractor.as400.exceptions.InetUtilException;
 import com.extractor.as400.file.FileOperations;
@@ -11,6 +13,7 @@ import com.extractor.as400.models.CollectorFileConfiguration;
 import com.extractor.as400.util.ConfigVerification;
 import com.extractor.as400.util.InetUtil;
 import com.extractor.as400.util.UsageHelp;
+import com.extractor.as400.util.Validations;
 import com.utmstack.grpc.connection.GrpcConnection;
 import com.utmstack.grpc.exception.CollectorServiceGrpcException;
 import com.utmstack.grpc.exception.GrpcConnectionException;
@@ -43,16 +46,16 @@ public class InstallExecutor implements IExecutor {
         if (!FileOperations.isLockFileCreated()) {
             try {
                 // Begin gRPC connection
-                String agentManagerHost = (String) UsageHelp.getParamsFromArgs().get("-host");
-                String agentManagerPort = (String) UsageHelp.getParamsFromArgs().get("-port");
-                String connectionKey = (String) UsageHelp.getParamsFromArgs().get("-connection-key");
+                String agentManagerHost = (String) UsageHelp.getParamsFromArgs().get(AllowedParamsEnum.PARAM_HOST.get());
+                String agentManagerPort = (String) UsageHelp.getParamsFromArgs().get(AllowedParamsEnum.PARAM_PORT.get());
+                String connectionKey = (String) UsageHelp.getParamsFromArgs().get(AllowedParamsEnum.PARAM_CONNECTION_KEY.get());
 
                 // Set the authentication needed for register a collector
                 KeyStore.setConnectionKey(connectionKey);
                 // Connectiong to gRPC server
                 GrpcConnection con = new GrpcConnection();
                 con.connectTo(agentManagerHost,
-                        Integer.parseInt(agentManagerPort));
+                        Validations.validateNumber(agentManagerPort, ValidationTypeEnum.PORT));
 
                 // Register request
                 InetUtil.searchForLocalIP();
@@ -72,9 +75,8 @@ public class InstallExecutor implements IExecutor {
                 FileOperations.createLockFile(config);
                 logger.info(ctx + ": Collector registered successfully.");
 
-            } catch (java.lang.NumberFormatException e) {
-                throw new ExecutorAS400Exception(ctx + ": Invalid port value -> " + e.getMessage());
-            } catch (GrpcConnectionException | CollectorServiceGrpcException | InetUtilException e) {
+            } catch (NumberFormatException | GrpcConnectionException | CollectorServiceGrpcException |
+                     InetUtilException e) {
                 throw new ExecutorAS400Exception(ctx + ": " + e.getMessage());
             } catch (IOException e) {
                 throw new ExecutorAS400Exception(ctx + ": Error saving the collector installation information -> " + e.getMessage());
