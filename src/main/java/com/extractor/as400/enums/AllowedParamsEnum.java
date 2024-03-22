@@ -16,7 +16,8 @@ public enum AllowedParamsEnum {
     PARAM_OPTION("-option",2),
     PARAM_HOST("-host",2),
     PARAM_PORT("-port",2),
-    PARAM_CONNECTION_KEY("-connection-key",2);
+    PARAM_CONNECTION_KEY("-connection-key",2),
+    PARAM_OUTPUT_FORWARDER("-forward-to",2);
 
 
     // Represents the value of the enum

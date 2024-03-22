@@ -1,13 +1,16 @@
 package com.extractor.as400.executors.impl;
 
 import com.extractor.as400.concurrent.AS400PingParallelTask;
-import com.extractor.as400.concurrent.AS400SyslogParallelTask;
+import com.extractor.as400.concurrent.AS400IngestParallelTask;
+import com.extractor.as400.enums.AllowedParamsEnum;
+import com.extractor.as400.enums.ForwarderEnum;
 import com.extractor.as400.exceptions.ExecutorAS400Exception;
 import com.extractor.as400.file.FileOperations;
 import com.extractor.as400.interfaces.IExecutor;
 import com.extractor.as400.models.ServerState;
 import com.extractor.as400.util.ConfigVerification;
 import com.extractor.as400.util.ThreadsUtil;
+import com.extractor.as400.util.UsageHelp;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -54,7 +57,9 @@ public class RunExecutor implements IExecutor {
                         Iterator<ServerState> serverStateIterator;
                         for (serverStateIterator = ConfigVerification.getServerStateList().iterator(); serverStateIterator.hasNext(); ) {
                             try {
-                                etlExecutor.execute(new AS400SyslogParallelTask().withServerState(serverStateIterator.next()));
+                                etlExecutor.execute(new AS400IngestParallelTask().withServerState(serverStateIterator.next())
+                                        .withForwarder(ForwarderEnum.getByValue((String) UsageHelp.getParamsFromArgs()
+                                                .get(AllowedParamsEnum.PARAM_OUTPUT_FORWARDER.get()))).build());
                             } catch (Exception e) {
                                 logger.error(ctx + ": Error processing logs -> " + e.getMessage());
                             }

@@ -1,6 +1,7 @@
 package com.extractor.as400;
 
 import com.extractor.as400.enums.AllowedParamsEnum;
+import com.extractor.as400.enums.ForwarderEnum;
 import com.extractor.as400.enums.InstallationOptionsEnum;
 import com.extractor.as400.exceptions.ExecutorAS400Exception;
 import com.extractor.as400.executors.ExecutorFactory;
@@ -32,9 +33,14 @@ public class Main {
                 // Calling the correct executor for this option
                 IExecutor iExecutor = new ExecutorFactory().getExecutor(opts);
                 if (iExecutor != null) {
-                    iExecutor.execute();
+                    ForwarderEnum forwarderEnum = ForwarderEnum.getByValue((String) UsageHelp.getParamsFromArgs().get(AllowedParamsEnum.PARAM_OUTPUT_FORWARDER.get()));
+                    if (forwarderEnum!=ForwarderEnum.UNRECOGNIZED_FORWARDER) {
+                        iExecutor.execute();
+                    } else {
+                        throw new ExecutorAS400Exception ("Invalid value for param "+ AllowedParamsEnum.PARAM_OUTPUT_FORWARDER.get() + ", only " + Arrays.toString(ForwarderEnum.getAllowedForwarders()) + " are allowed.");
+                    }
                 } else {
-                    throw new ExecutorAS400Exception ("Invalid value for param -option only " + Arrays.toString(AllowedParamsEnum.getAllowedParams()) + " are allowed.");
+                    throw new ExecutorAS400Exception ("Invalid value for param "+ AllowedParamsEnum.PARAM_OPTION.get() + ", only " + Arrays.toString(AllowedParamsEnum.getAllowedParams()) + " are allowed.");
                 }
             } else {
                 logger.info(UsageHelp.usage());

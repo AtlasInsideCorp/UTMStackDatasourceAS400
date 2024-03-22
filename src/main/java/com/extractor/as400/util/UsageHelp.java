@@ -81,7 +81,7 @@ public class UsageHelp {
             }
             // Finally, verify that all the params are present
             Arrays.stream(AllowedParamsEnum.values()).forEach(p -> {
-                if (p.ordinal() > 0 && !params.containsKey(p.get())) {
+                if (p != AllowedParamsEnum.UNRECOGNIZED_PARAM && !params.containsKey(p.get())) {
                     paramErrors.append("\nThe parameter -> ").append(p.get()).append(", is missing, please check.");
                     verify.set(false);
                 }

@@ -2,7 +2,10 @@ package com.extractor.as400.concurrent;
 
 import com.extractor.as400.config.AS400ExtractorConstants;
 import com.extractor.as400.connector.connectors.AS400Connector;
+import com.extractor.as400.enums.ForwarderEnum;
 import com.extractor.as400.file.FileOperations;
+import com.extractor.as400.forwarders.ForwarderFactory;
+import com.extractor.as400.interfaces.IForwarder;
 import com.extractor.as400.models.ServerState;
 import com.extractor.as400.util.ConfigVerification;
 import com.extractor.as400.util.ThreadsUtil;
@@ -11,7 +14,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.productivity.java.syslog4j.SyslogIF;
 
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 
 /**
  * @author Freddy R. Laffita Almaguer
@@ -19,28 +24,28 @@ import java.util.Enumeration;
  * Using this class you can extract logs simultaneously from many as400 systems
  * @see Thread#run()
  */
-public class AS400SyslogParallelTask implements Runnable {
-    private static final String CLASSNAME = "AS400SyslogParallelTask";
-    private static final Logger logger = LogManager.getLogger(AS400SyslogParallelTask.class);
+public class AS400IngestParallelTask implements Runnable {
+    private static final String CLASSNAME = "AS400IngestParallelTask";
+    private static final Logger logger = LogManager.getLogger(AS400IngestParallelTask.class);
     // Represents the server as400 that you are about to extract logs from
-    ServerState serverState = ConfigVerification.getServerStateList().get(0);
-    // Syslog server (Destination)
-    SyslogIF syslogServer;
+    ServerState serverState;
+    // Represents the forwarder where to send logs
+    ForwarderEnum forwarder;
 
-    public AS400SyslogParallelTask() {
+    public AS400IngestParallelTask() {
     }
 
-    public AS400SyslogParallelTask withServerState(ServerState serverState) {
+    public AS400IngestParallelTask withServerState(ServerState serverState) {
         this.serverState = serverState;
         return this;
     }
 
-    public AS400SyslogParallelTask withSyslogIF(SyslogIF syslogServer) {
-        this.syslogServer = syslogServer;
+    public AS400IngestParallelTask withForwarder(ForwarderEnum forwarder) {
+        this.forwarder = forwarder;
         return this;
     }
 
-    public AS400SyslogParallelTask build() {
+    public AS400IngestParallelTask build() {
         return this;
     }
 
@@ -50,6 +55,8 @@ public class AS400SyslogParallelTask implements Runnable {
         StringBuffer logsBuffer = new StringBuffer();
         ServerState serverState;
         String stateInfo;
+        // Creating the list to store the messages batchs before sending to forwarder
+        List<String> messagesForwardingList = new ArrayList<>(AS400ExtractorConstants.BATCH_SIZE * 2);
 
         try {
             // When the process launch, we first change the state to RUNNING
@@ -126,12 +133,14 @@ public class AS400SyslogParallelTask implements Runnable {
                                 if (calendarEND > calendarSTART) {
                                     FileOperations.saveLastLogDate(calendarEND, this.serverState.getServerDefAS400());
                                     batchCounter = 0;
+                                    // Then send the logs to forwarder and clear the list
+                                    IForwarder forwarder = new ForwarderFactory().getForwarder(this.forwarder, this.serverState);
+                                    forwarder.forwardLogs(messagesForwardingList);
+                                    messagesForwardingList.clear();
                                 }
                             }
                             if (message.getDate().getTimeInMillis() > calendarSTART) {
-                                this.syslogServer.log(this.syslogServer.getConfig().getFacility(),
-                                        AS400ExtractorConstants.META_AS400_KEY + "[AS400Server=" + this.serverState.getServerDefAS400().getHostName() + "] "
-                                                + "[AS400Tenant=" + this.serverState.getServerDefAS400().getTenant() + "] " + message.getText());
+                                messagesForwardingList.add(message.getText());
                                 calendarEND = message.getDate().getTimeInMillis();
                                 batchCounter++;
                             }

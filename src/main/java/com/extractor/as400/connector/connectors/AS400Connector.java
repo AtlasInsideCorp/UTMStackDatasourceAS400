@@ -20,16 +20,13 @@ public class AS400Connector {
             as400new.setGuiAvailable(false);
             as400new.setUserId(serverDefAS400.getUserId());
             as400new.setPassword(serverDefAS400.getUserPassword().toCharArray());
-            // System.out.println("***** AS400 hostname -> "+serverDefAS400.getHostName()+", serverId -> "+serverDefAS400+" - (Initiated) *****");
         } else {
             if (as400new.isConnected() && as400new.isConnectionAlive()) {
-                // System.out.println("***** AS400 hostname -> "+serverDefAS400.getHostName()+", serverId -> "+serverDefAS400+" - (reused) *****");
             } else {
                 as400new = new AS400(serverDefAS400.getHostName());
                 as400new.setGuiAvailable(false);
                 as400new.setUserId(serverDefAS400.getUserId());
                 as400new.setPassword(serverDefAS400.getUserPassword().toCharArray());
-                // System.out.println("***** AS400 hostname -> "+serverDefAS400.getHostName()+", serverId -> "+serverDefAS400+" trying with new connection *****");
             }
         }
         return as400new;
