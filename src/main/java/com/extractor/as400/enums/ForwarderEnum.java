@@ -10,18 +10,20 @@ import java.util.Optional;
 public enum ForwarderEnum {
 
     // Important: Don't insert more forwarders before this one
-    UNRECOGNIZED_FORWARDER("UNRECOGNIZED_FORWARDER",0),
+    UNRECOGNIZED_FORWARDER("UNRECOGNIZED_FORWARDER",0,true),
     //----------------------------------------------------------
 
-    SYSLOG ("SYSLOG",1),
-    GRPC_LOG_AUTH_PROXY("GRPC_LOG_AUTH_PROXY",100);
+    GRPC_LOG_AUTH_PROXY("GRPC_LOG_AUTH_PROXY",100,true),
+    SYSLOG ("SYSLOG",1,false);
 
     private String fValue;
     private int fBatchSize;
+    private boolean available;
 
-    ForwarderEnum(String fValue, int fBatchSize) {
+    ForwarderEnum(String fValue, int fBatchSize, boolean available) {
         this.fValue = fValue;
         this.fBatchSize = fBatchSize;
+        this.available = available;
     }
 
     public String get() {
@@ -31,6 +33,11 @@ public enum ForwarderEnum {
     public int getfBatchSize() {
         return fBatchSize;
     }
+
+    public boolean isAvailable() {
+        return available;
+    }
+
     public static ForwarderEnum getByValue (String value) {
         try {
             Optional<ForwarderEnum> val = Arrays
@@ -46,6 +53,7 @@ public enum ForwarderEnum {
      * Method to get all the ForwarderEnum as object array, excluding UNRECOGNIZED_FORWARDER
      * */
     public static Object [] getAllowedForwarders () {
-        return Arrays.stream(ForwarderEnum.values()).filter(f-> !f.equals(ForwarderEnum.UNRECOGNIZED_FORWARDER)).toArray();
+        return Arrays.stream(ForwarderEnum.values()).filter(f-> !f.equals(ForwarderEnum.UNRECOGNIZED_FORWARDER)
+        && f.isAvailable()).toArray();
     }
 }

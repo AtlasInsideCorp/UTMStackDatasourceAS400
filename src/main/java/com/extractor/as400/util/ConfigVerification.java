@@ -45,7 +45,14 @@ public class ConfigVerification {
                 }
                return true;
             } catch (Exception ex) {
+                logger.error(ctx + ": While reading servers configuration file. Check that /local_storage/Servers.json file exists and is a valid json");
                 logger.error(UsageHelp.usage());
+                try {
+                    Thread.sleep(30000);
+                    logger.error(ctx + ": We couldn't wait, the thread was interrupted");
+                } catch (InterruptedException e) {
+                    return false;
+                }
                 return false;
             }
     }

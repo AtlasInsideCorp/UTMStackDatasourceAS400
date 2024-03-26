@@ -2,6 +2,8 @@ package com.extractor.as400.util;
 
 
 import com.extractor.as400.enums.AllowedParamsEnum;
+import com.extractor.as400.enums.ForwarderEnum;
+import com.extractor.as400.enums.InstallationOptionsEnum;
 import com.utmstack.grpc.util.StringUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -20,12 +22,14 @@ public class UsageHelp {
     private static Map<String, Object> params = new LinkedHashMap<>();
 
     public static String usage() {
-        return "Verify that the args passed to the program have this format: -option=RUN -host=localhost -port=50051 -connection-key=XXX" +
+        return "Verify that the args passed to the program have this format: -option=XXX -forward-to=XXX -host=XXX -port=XXX -connection-key=XXX" +
                 "\n*** Param -> Values ***" +
-                "\n  -option: Can be " + Arrays.toString(AllowedParamsEnum.getAllowedParams()) +
+                "\n  -option: Can be one of " + Arrays.toString(InstallationOptionsEnum.getAllowedOptions()) +
+                "\n  -forward-to: Can be " + (ForwarderEnum.getAllowedForwarders().length > 1 ? "one of " : "only ") + Arrays.toString(ForwarderEnum.getAllowedForwarders()) +
                 "\n  -host: Represents the host of the collector manager to connect to" +
-                "\n  -port: Represents the port of the collector manager to connect to" +
-                "\n  -connection-key: Represents your purchased key of your UTMStack instance";
+                "\n  -port: Represents the port of the collector manager to connect to" + ", usually 50051 " +
+                "\n  -connection-key: Represents the purchased key of your UTMStack instance" +
+                "\n  Example: -option=INSTALL -forward-to=GRPC_LOG_AUTH_PROXY -host=localhost -port=50051 -connection-key=XXX";
     }
 
     public static String duplicateErrorDesc() {

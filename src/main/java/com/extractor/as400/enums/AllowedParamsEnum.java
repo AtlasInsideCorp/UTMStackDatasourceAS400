@@ -58,6 +58,6 @@ public enum AllowedParamsEnum {
      * Method to get all the AllowedParamsEnum as object array, excluding UNRECOGNIZED_PARAM
      * */
     public static Object [] getAllowedParams () {
-        return Arrays.stream(InstallationOptionsEnum.values()).filter(f-> !f.equals(InstallationOptionsEnum.UNRECOGNIZED_OPTION)).toArray();
+        return Arrays.stream(AllowedParamsEnum.values()).filter(f-> !f.equals(AllowedParamsEnum.UNRECOGNIZED_PARAM)).toArray();
     }
 }

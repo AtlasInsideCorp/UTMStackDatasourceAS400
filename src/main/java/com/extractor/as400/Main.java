@@ -40,7 +40,7 @@ public class Main {
                         throw new ExecutorAS400Exception ("Invalid value for param "+ AllowedParamsEnum.PARAM_OUTPUT_FORWARDER.get() + ", only " + Arrays.toString(ForwarderEnum.getAllowedForwarders()) + " are allowed.");
                     }
                 } else {
-                    throw new ExecutorAS400Exception ("Invalid value for param "+ AllowedParamsEnum.PARAM_OPTION.get() + ", only " + Arrays.toString(AllowedParamsEnum.getAllowedParams()) + " are allowed.");
+                    throw new ExecutorAS400Exception ("Invalid value for param "+ AllowedParamsEnum.PARAM_OPTION.get() + ", only " + Arrays.toString(InstallationOptionsEnum.getAllowedOptions()) + " are allowed.");
                 }
             } else {
                 logger.info(UsageHelp.usage());

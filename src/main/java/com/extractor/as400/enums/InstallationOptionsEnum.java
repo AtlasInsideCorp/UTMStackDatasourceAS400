@@ -30,4 +30,10 @@ public enum InstallationOptionsEnum {
             return UNRECOGNIZED_OPTION;
         }
     }
+    /**
+     * Method to get all the InstallationOptionsEnum as object array, excluding UNRECOGNIZED_PARAM
+     * */
+    public static Object [] getAllowedOptions () {
+        return Arrays.stream(InstallationOptionsEnum.values()).filter(f-> !f.equals(InstallationOptionsEnum.UNRECOGNIZED_OPTION)).toArray();
+    }
 }
