@@ -16,6 +16,7 @@ import com.utmstack.grpc.exception.CollectorServiceGrpcException;
 import com.utmstack.grpc.exception.GrpcConnectionException;
 import com.utmstack.grpc.jclient.config.Constants;
 import com.utmstack.grpc.jclient.config.interceptors.KeyStore;
+import com.utmstack.grpc.jclient.config.interceptors.impl.GrpcConnectionKeyInterceptor;
 import com.utmstack.grpc.service.CollectorService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -54,8 +55,9 @@ public class UninstallExecutor implements IExecutor {
                 KeyStore.setConnectionKey(connectionKey);
                 // Connectiong to gRPC server
                 GrpcConnection con = new GrpcConnection();
-                    con.connectTo(collectorManagerHost,
-                            Validations.validateNumber(collectorManagerPort, ValidationTypeEnum.PORT));
+                    con.createChannel(collectorManagerHost,
+                            Validations.validateNumber(collectorManagerPort, ValidationTypeEnum.PORT),
+                            new GrpcConnectionKeyInterceptor());
 
                 // Delete request
                 Map<String, String> info = FileOperations.getCollectorInfo();

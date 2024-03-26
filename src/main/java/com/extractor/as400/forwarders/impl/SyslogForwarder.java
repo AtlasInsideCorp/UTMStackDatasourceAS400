@@ -16,11 +16,9 @@ import java.util.List;
  * This class is used to forward extracted AS400 messages to syslog
  */
 public class SyslogForwarder implements IForwarder {
-    /**
-     * @return a boolean representing the final state of the process
-     */
+
     private static final String CLASSNAME = "SyslogForwarder";
-    private static final Logger logger = LogManager.getLogger(AS400IngestParallelTask.class);
+    private static final Logger logger = LogManager.getLogger(SyslogForwarder.class);
 
     private ServerState as400Server;
     public SyslogForwarder withServerState (ServerState as400Server) {
@@ -30,6 +28,11 @@ public class SyslogForwarder implements IForwarder {
     public SyslogForwarder build () {
         return this;
     }
+
+    /**
+     * @param messages is the list of messages to send
+     * @return a boolean representing the final state of the process
+     */
     @Override
     public boolean forwardLogs(List<String> messages) {
         final String ctx = CLASSNAME + ".forwardLogs";

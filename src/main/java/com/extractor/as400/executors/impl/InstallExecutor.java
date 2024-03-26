@@ -18,6 +18,7 @@ import com.utmstack.grpc.connection.GrpcConnection;
 import com.utmstack.grpc.exception.CollectorServiceGrpcException;
 import com.utmstack.grpc.exception.GrpcConnectionException;
 import com.utmstack.grpc.jclient.config.interceptors.KeyStore;
+import com.utmstack.grpc.jclient.config.interceptors.impl.GrpcConnectionKeyInterceptor;
 import com.utmstack.grpc.service.CollectorService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -46,16 +47,17 @@ public class InstallExecutor implements IExecutor {
         if (!FileOperations.isLockFileCreated()) {
             try {
                 // Begin gRPC connection
-                String agentManagerHost = (String) UsageHelp.getParamsFromArgs().get(AllowedParamsEnum.PARAM_HOST.get());
-                String agentManagerPort = (String) UsageHelp.getParamsFromArgs().get(AllowedParamsEnum.PARAM_PORT.get());
+                String collectorManagerHost = (String) UsageHelp.getParamsFromArgs().get(AllowedParamsEnum.PARAM_HOST.get());
+                String collectorManagerPort = (String) UsageHelp.getParamsFromArgs().get(AllowedParamsEnum.PARAM_PORT.get());
                 String connectionKey = (String) UsageHelp.getParamsFromArgs().get(AllowedParamsEnum.PARAM_CONNECTION_KEY.get());
 
                 // Set the authentication needed for register a collector
                 KeyStore.setConnectionKey(connectionKey);
                 // Connectiong to gRPC server
                 GrpcConnection con = new GrpcConnection();
-                con.connectTo(agentManagerHost,
-                        Validations.validateNumber(agentManagerPort, ValidationTypeEnum.PORT));
+                con.createChannel(collectorManagerHost,
+                        Validations.validateNumber(collectorManagerPort, ValidationTypeEnum.PORT),
+                        new GrpcConnectionKeyInterceptor());
 
                 // Register request
                 InetUtil.searchForLocalIP();
@@ -71,7 +73,7 @@ public class InstallExecutor implements IExecutor {
                 AuthResponse response = serv.registerCollector(req);
 
                 // Saving collector info in the lock file
-                CollectorFileConfiguration config = new CollectorFileConfiguration(response, agentManagerHost, Integer.parseInt(agentManagerPort));
+                CollectorFileConfiguration config = new CollectorFileConfiguration(response, collectorManagerHost, Integer.parseInt(collectorManagerPort));
                 FileOperations.createLockFile(config);
                 logger.info(ctx + ": Collector registered successfully.");
 

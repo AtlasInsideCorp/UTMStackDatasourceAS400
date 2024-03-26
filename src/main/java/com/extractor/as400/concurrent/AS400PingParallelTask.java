@@ -11,6 +11,8 @@ import com.utmstack.grpc.connection.GrpcConnection;
 import com.utmstack.grpc.exception.GrpcConnectionException;
 import com.utmstack.grpc.exception.PingException;
 import com.utmstack.grpc.jclient.config.Constants;
+import com.utmstack.grpc.jclient.config.interceptors.impl.GrpcConnectionKeyInterceptor;
+import com.utmstack.grpc.jclient.config.interceptors.impl.GrpcEmptyAuthInterceptor;
 import com.utmstack.grpc.service.PingService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -74,7 +76,8 @@ public class AS400PingParallelTask implements Runnable {
 
                 // Connectiong to gRPC server
                 GrpcConnection con = new GrpcConnection();
-                    con.connectTo(info.get(AS400ExtractorConstants.COLLECTOR_MANAGER_HOST), collectorMport);
+                    con.createChannel(info.get(AS400ExtractorConstants.COLLECTOR_MANAGER_HOST), collectorMport,
+                            new GrpcEmptyAuthInterceptor());
 
                     // Creating ping requests of the current collector
                     PingRequest pingRequest = PingRequest.newBuilder()
