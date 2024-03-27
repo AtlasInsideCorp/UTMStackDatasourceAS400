@@ -22,10 +22,10 @@ public class UsageHelp {
     private static Map<String, Object> params = new LinkedHashMap<>();
 
     public static String usage() {
-        return "Verify that the args passed to the program have this format: -option=XXX -forward-to=XXX -host=XXX -port=XXX -connection-key=XXX" +
+        return "Verify that the args passed to the program have this format: -option=XXX -host=XXX -port=XXX -connection-key=XXX" +
                 "\n*** Param -> Values ***" +
                 "\n  -option: Can be one of " + Arrays.toString(InstallationOptionsEnum.getAllowedOptions()) +
-                "\n  -forward-to: Can be " + (ForwarderEnum.getAllowedForwarders().length > 1 ? "one of " : "only ") + Arrays.toString(ForwarderEnum.getAllowedForwarders()) +
+                //"\n  -forward-to: Can be " + (ForwarderEnum.getAllowedForwarders().length > 1 ? "one of " : "only ") + Arrays.toString(ForwarderEnum.getAllowedForwarders()) +
                 "\n  -host: Represents the host of the collector manager to connect to" +
                 "\n  -port: Represents the port of the collector manager to connect to" + ", usually 50051 " +
                 "\n  -connection-key: Represents the purchased key of your UTMStack instance" +
@@ -52,9 +52,9 @@ public class UsageHelp {
         StringBuilder paramErrors = new StringBuilder();
 
         try {
-            int allowedParamsCount = AllowedParamsEnum.values().length;
-            if (args.length != allowedParamsCount - 1) {
-                logger.error(ctx + "The number of params is not correct: Expected -> " + allowedParamsCount + ", Found -> " + args.length);
+            int allowedParamsCount = AllowedParamsEnum.getAllowedParams().length;
+            if (args.length != allowedParamsCount) {
+                logger.error(ctx + ": The number of params is not correct: Expected -> " + allowedParamsCount + ", Found -> " + args.length);
                 return false;
             }
             for (String arg : args) {

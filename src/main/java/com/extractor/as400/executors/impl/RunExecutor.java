@@ -59,7 +59,7 @@ public class RunExecutor implements IExecutor {
                             try {
                                 etlExecutor.execute(new AS400IngestParallelTask().withServerState(serverStateIterator.next())
                                         .withForwarder(ForwarderEnum.getByValue((String) UsageHelp.getParamsFromArgs()
-                                                .get(AllowedParamsEnum.PARAM_OUTPUT_FORWARDER.get()))).build());
+                                                .get(ForwarderEnum.GRPC_LOG_AUTH_PROXY.get()))).build());
                             } catch (Exception e) {
                                 logger.error(ctx + ": Error processing logs -> " + e.getMessage());
                             }

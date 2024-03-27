@@ -5,6 +5,7 @@ import agent.CollectorOuterClass.CollectorModule;
 import agent.Common.AuthResponse;
 import com.extractor.as400.enums.AllowedParamsEnum;
 import com.extractor.as400.enums.ValidationTypeEnum;
+import com.extractor.as400.exceptions.AS400CipherException;
 import com.extractor.as400.exceptions.ExecutorAS400Exception;
 import com.extractor.as400.exceptions.InetUtilException;
 import com.extractor.as400.file.FileOperations;
@@ -78,7 +79,7 @@ public class InstallExecutor implements IExecutor {
                 logger.info(ctx + ": Collector registered successfully.");
 
             } catch (NumberFormatException | GrpcConnectionException | CollectorServiceGrpcException |
-                     InetUtilException e) {
+                     InetUtilException | AS400CipherException e) {
                 throw new ExecutorAS400Exception(ctx + ": " + e.getMessage());
             } catch (IOException e) {
                 throw new ExecutorAS400Exception(ctx + ": Error saving the collector installation information -> " + e.getMessage());

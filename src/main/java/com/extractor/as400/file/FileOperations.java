@@ -1,15 +1,24 @@
 package com.extractor.as400.file;
 
+import com.extractor.as400.exceptions.AS400CipherException;
 import com.extractor.as400.jsonparser.GenericParser;
 import com.extractor.as400.models.CollectorFileConfiguration;
+import com.extractor.as400.models.ServerConfigAS400;
 import com.extractor.as400.models.ServerDefAS400;
+import com.extractor.as400.util.CipherUtil;
 import com.extractor.as400.util.ConfigVerification;
 import com.extractor.as400.config.AS400ExtractorConstants;
 import com.utmstack.grpc.jclient.config.Constants;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import java.io.*;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -24,6 +33,10 @@ public class FileOperations {
     private static final Logger logger = LogManager.getLogger(FileOperations.class);
     private static final File LOCAL_STORAGE = new File("local_storage");
     private static final File LOCK_FILE = new File(LOCAL_STORAGE + "/collector.lock");
+
+    public static File getLockFile() {
+        return LOCK_FILE;
+    }
 
     // Map used to store the collector information from lock file
     private static Map<String, String> collectorInfo = new LinkedHashMap<>();
@@ -55,6 +68,7 @@ public class FileOperations {
         fos.close();
     }
 
+    // Method to read the servers file (file that contains the as400 servers configuration)
     public static String readServersFile() throws IOException {
         final String ctx = CLASSNAME + ".readServersFile";
         File configFile = getConfigFile();
@@ -65,7 +79,7 @@ public class FileOperations {
             StringBuilder stb = new StringBuilder();
 
             while ((inputLine = raf.readLine()) != null) {
-                stb.append(inputLine + "\n");
+                stb.append(inputLine);
             }
 
             raf.close();
@@ -75,6 +89,31 @@ public class FileOperations {
             throw new IOException(ctx + "Unable to locate AS400 configuration file under local_storage folder. Check if you " +
                     "created a valid .json file.");
         }
+    }
+
+    // Method to persist the servers file (file that contains the as400 servers configuration)
+    public static void writeServersFile(ServerConfigAS400 servers) throws IOException, AS400CipherException {
+        final String ctx = CLASSNAME + ".writeServersFile";
+
+        File SERVERS_FILE = new File(LOCAL_STORAGE + "/Servers.json");
+        if (SERVERS_FILE.exists()) {
+            SERVERS_FILE = new File(LOCAL_STORAGE + "/Servers-" + System.currentTimeMillis() + ".json");
+        }
+        // Encrypting and writing to the file
+        FileOutputStream fos = new FileOutputStream(SERVERS_FILE);
+        // Parsing structure before save to file
+        GenericParser gp = new GenericParser();
+        String serverData = gp.parseTo(servers);
+
+        // Getting the collector key used to encrypt
+        String ENCRYPTION_KEY = FileOperations.getCollectorInfo().get(Constants.COLLECTOR_KEY_HEADER)
+                + "-" + CipherUtil.AS_400_SEED_SECRET_KEY + "-" + LOCK_FILE.lastModified();
+        // Encrypting
+        String finalData;
+        finalData = CipherUtil.encryptionByMode(serverData, ENCRYPTION_KEY, Cipher.ENCRYPT_MODE);
+        fos.write(finalData.getBytes());
+        fos.close();
+
     }
 
     // Method to get the last Configuration file (Servers.json)
@@ -119,7 +158,7 @@ public class FileOperations {
             StringBuilder stb = new StringBuilder();
 
             while ((inputLine = raf.readLine()) != null) {
-                stb.append(inputLine + "\n");
+                stb.append(inputLine);
             }
 
             raf.close();
@@ -136,9 +175,10 @@ public class FileOperations {
     }
 
     /**
-     * Utility method to create lock file
+     * Utility method to create lock file with the content encrypted using a base key generated during
+     * compilation
      */
-    public static void createLockFile(CollectorFileConfiguration config) throws IOException {
+    public static void createLockFile(CollectorFileConfiguration config) throws IOException, AS400CipherException {
         if (!LOCAL_STORAGE.exists()) {
             LOCAL_STORAGE.mkdir();
         }
@@ -146,7 +186,8 @@ public class FileOperations {
         // Parsing structure to JSON before save to file
         GenericParser gp = new GenericParser();
         String infoData = gp.parseTo(config);
-        fos.write(infoData.getBytes());
+        String encrypted = CipherUtil.encryptionByMode(infoData, CipherUtil.AS_400_SEED_SECRET_KEY, Cipher.ENCRYPT_MODE);
+        fos.write(encrypted.getBytes());
         fos.close();
     }
 
@@ -181,9 +222,10 @@ public class FileOperations {
         final String ctx = CLASSNAME + ".getCollectorInfo";
         if (collectorInfo.isEmpty()) {
             try {
-                // Parsing JSON Servers structure to handler class
+                // Parsing JSON Servers structure to handler class, but first, decrypt the content of the lock file
+                String decrypted = CipherUtil.encryptionByMode(FileOperations.readLockFile(), CipherUtil.AS_400_SEED_SECRET_KEY, Cipher.DECRYPT_MODE);
                 GenericParser gp = new GenericParser();
-                CollectorFileConfiguration conf = gp.parseFrom(FileOperations.readLockFile(), CollectorFileConfiguration.class, new CollectorFileConfiguration());
+                CollectorFileConfiguration conf = gp.parseFrom(decrypted, CollectorFileConfiguration.class, new CollectorFileConfiguration());
 
                 collectorInfo.put(Constants.COLLECTOR_ID_HEADER, String.valueOf(conf.getId()));
                 collectorInfo.put(Constants.COLLECTOR_KEY_HEADER, conf.getKey());
