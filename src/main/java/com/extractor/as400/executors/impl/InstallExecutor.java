@@ -52,8 +52,6 @@ public class InstallExecutor implements IExecutor {
                 String collectorManagerPort = (String) UsageHelp.getParamsFromArgs().get(AllowedParamsEnum.PARAM_PORT.get());
                 String connectionKey = (String) UsageHelp.getParamsFromArgs().get(AllowedParamsEnum.PARAM_CONNECTION_KEY.get());
 
-                // Set the authentication needed for register a collector
-                KeyStore.setConnectionKey(connectionKey);
                 // Connectiong to gRPC server
                 GrpcConnection con = new GrpcConnection();
                 con.createChannel(collectorManagerHost,
@@ -71,7 +69,7 @@ public class InstallExecutor implements IExecutor {
 
                 // Instantiating the collector service
                 CollectorService serv = new CollectorService(con);
-                AuthResponse response = serv.registerCollector(req);
+                AuthResponse response = serv.registerCollector(req, connectionKey);
 
                 // Saving collector info in the lock file
                 CollectorFileConfiguration config = new CollectorFileConfiguration(response, collectorManagerHost, Integer.parseInt(collectorManagerPort));
