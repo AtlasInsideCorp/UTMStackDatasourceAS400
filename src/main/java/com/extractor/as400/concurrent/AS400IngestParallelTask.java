@@ -1,18 +1,17 @@
 package com.extractor.as400.concurrent;
 
 import com.extractor.as400.config.AS400ExtractorConstants;
+import com.extractor.as400.config.InMemoryConfigurations;
 import com.extractor.as400.connector.connectors.AS400Connector;
 import com.extractor.as400.enums.ForwarderEnum;
 import com.extractor.as400.file.FileOperations;
 import com.extractor.as400.forwarders.ForwarderFactory;
 import com.extractor.as400.interfaces.IForwarder;
 import com.extractor.as400.models.ServerState;
-import com.extractor.as400.util.ConfigVerification;
 import com.extractor.as400.util.ThreadsUtil;
 import com.ibm.as400.access.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.productivity.java.syslog4j.SyslogIF;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -60,14 +59,14 @@ public class AS400IngestParallelTask implements Runnable {
 
         try {
             // When the process launch, we first change the state to RUNNING
-            ConfigVerification.changeServerStateStatus(this.serverState, "RUNNING");
-            serverState = ConfigVerification.getServerStateStatus(this.serverState);
+            InMemoryConfigurations.changeServerStateStatus(this.serverState, "RUNNING");
+            serverState = InMemoryConfigurations.getServerStateStatus(this.serverState);
             stateInfo = serverState != null ? serverState.toString() : this.serverState.toString();
-            logsBuffer.append("***** ").append(ConfigVerification.getActualDate()).append(" Log extraction report from as400 ").append(stateInfo).append(" *****\n");
+            logsBuffer.append("***** ").append(" Log extraction report from as400 ").append(stateInfo).append(" *****\n");
 
-            serverState = ConfigVerification.getServerStateStatus(this.serverState);
+            serverState = InMemoryConfigurations.getServerStateStatus(this.serverState);
             stateInfo = serverState != null ? serverState.toString() : this.serverState.toString();
-            logsBuffer.append("***** ").append(ConfigVerification.getActualDate()).append(" PHASE 1. Connection ").append(stateInfo).append(" *****\n");
+            logsBuffer.append("***** ").append(" PHASE 1. Connection ").append(stateInfo).append(" *****\n");
 
             // Connect to the AS400 server and Syslog destination
             AS400JPing pingObj = new AS400JPing(this.serverState.getServerDefAS400().getHostName());
@@ -84,9 +83,9 @@ public class AS400IngestParallelTask implements Runnable {
                     // Log the services status
                     logsBuffer.append("***** SERVICES STATUS *******");
                     logsBuffer.append(pingData + "\n");
-                    serverState = ConfigVerification.getServerStateStatus(this.serverState);
+                    serverState = InMemoryConfigurations.getServerStateStatus(this.serverState);
                     stateInfo = serverState != null ? serverState.toString() : this.serverState.toString();
-                    logsBuffer.append("***** ").append(ConfigVerification.getActualDate()).append(" PHASE 2. Getting logs and sending to Syslog ").append(stateInfo).append(" *****\n");
+                    logsBuffer.append("***** ").append(" PHASE 2. Getting logs and sending to Syslog ").append(stateInfo).append(" *****\n");
 
                     // Getting logs
                     HistoryLog historyLog = null;
@@ -95,10 +94,10 @@ public class AS400IngestParallelTask implements Runnable {
                         historyLog = new HistoryLog(as400);
                         messageList = historyLog.getMessages();
                     } catch (Exception e) {
-                        ConfigVerification.changeServerStateStatus(this.serverState, "ERROR");
-                        serverState = ConfigVerification.getServerStateStatus(this.serverState);
+                        InMemoryConfigurations.changeServerStateStatus(this.serverState, "ERROR");
+                        serverState = InMemoryConfigurations.getServerStateStatus(this.serverState);
                         stateInfo = serverState != null ? serverState.toString() : this.serverState.toString();
-                        logsBuffer.append("***** ").append(ConfigVerification.getActualDate()).append(" ERROR trying to get the HistoryLogs ").append(stateInfo).append(" *****\n");
+                        logsBuffer.append("***** ").append(" ERROR trying to get the HistoryLogs ").append(stateInfo).append(" *****\n");
                         logsBuffer.append("*** - Check your system version, must be higher than V5R4 *****\n");
                         logsBuffer.append("*** - Check if the HistoryLog exists and have some logs *****\n");
                         logsBuffer.append("*** - Check your system services availability and enable the failing services *****\n");
@@ -113,10 +112,10 @@ public class AS400IngestParallelTask implements Runnable {
                     }
 
                     if (historyLog != null && messageList != null) {
-                        logsBuffer.append("***** ").append(ConfigVerification.getActualDate()).append(" Reading last state ").append(stateInfo).append(" *****\n");
+                        logsBuffer.append("***** ").append(" Reading last state ").append(stateInfo).append(" *****\n");
                         // Read last saved state (log date)
                         long calendarSTART = FileOperations.readLastLogDate(this.serverState.getServerDefAS400());
-                        serverState = ConfigVerification.getServerStateStatus(this.serverState);
+                        serverState = InMemoryConfigurations.getServerStateStatus(this.serverState);
                         stateInfo = serverState != null ? serverState.toString() : this.serverState.toString();
                         logsBuffer.append("***** ").append(stateInfo).append(" Getting data From -> ").append(calendarSTART).append("\n");
 
@@ -147,9 +146,9 @@ public class AS400IngestParallelTask implements Runnable {
 
                         }
 
-                        serverState = ConfigVerification.getServerStateStatus(this.serverState);
+                        serverState = InMemoryConfigurations.getServerStateStatus(this.serverState);
                         stateInfo = serverState != null ? serverState.toString() : this.serverState.toString();
-                        logsBuffer.append("***** ").append(ConfigVerification.getActualDate()).append(" PHASE 3. Saving last log date ").append(stateInfo).append(" *****\n");
+                        logsBuffer.append("***** ").append(" PHASE 3. Saving last log date ").append(stateInfo).append(" *****\n");
 
 
                         // Disconnecting from as400
@@ -159,10 +158,10 @@ public class AS400IngestParallelTask implements Runnable {
                         if (calendarEND > calendarSTART) {
                             FileOperations.saveLastLogDate(calendarEND, this.serverState.getServerDefAS400());
                         }
-                        ConfigVerification.changeServerStateStatus(this.serverState, "SUCCESS");
-                        serverState = ConfigVerification.getServerStateStatus(this.serverState);
+                        InMemoryConfigurations.changeServerStateStatus(this.serverState, "SUCCESS");
+                        serverState = InMemoryConfigurations.getServerStateStatus(this.serverState);
                         stateInfo = serverState != null ? serverState.toString() : this.serverState.toString();
-                        logsBuffer.append("***** ").append(ConfigVerification.getActualDate()).append(" Process Result ").append(stateInfo).append(" *****\n");
+                        logsBuffer.append("***** ").append(" Process Result ").append(stateInfo).append(" *****\n");
                         logger.info(logsBuffer);
                         Thread.sleep(5000);
 
@@ -172,18 +171,18 @@ public class AS400IngestParallelTask implements Runnable {
                     }
                     // End authentication attempt
                 } else {
-                    ConfigVerification.changeServerStateStatus(this.serverState, "ERROR");
-                    serverState = ConfigVerification.getServerStateStatus(this.serverState);
+                    InMemoryConfigurations.changeServerStateStatus(this.serverState, "ERROR");
+                    serverState = InMemoryConfigurations.getServerStateStatus(this.serverState);
                     stateInfo = serverState != null ? serverState.toString() : this.serverState.toString();
-                    logsBuffer.append("***** ").append(ConfigVerification.getActualDate()).append(" ERROR authentication attempt failed to -> ").append(stateInfo).append(" please, check you configuration at Servers.json file, or check the AS400 system, it may be unavailable at this moment *****\n");
+                    logsBuffer.append("***** ").append(" ERROR authentication attempt failed to -> ").append(stateInfo).append(" please, check you configuration at Servers.json file, or check the AS400 system, it may be unavailable at this moment *****\n");
                     logger.info(logsBuffer);
                 }
                 // End of ping test
             } else {
-                ConfigVerification.changeServerStateStatus(this.serverState, "ERROR");
-                serverState = ConfigVerification.getServerStateStatus(this.serverState);
+                InMemoryConfigurations.changeServerStateStatus(this.serverState, "ERROR");
+                serverState = InMemoryConfigurations.getServerStateStatus(this.serverState);
                 stateInfo = serverState != null ? serverState.toString() : this.serverState.toString();
-                logsBuffer.append("***** ").append(ConfigVerification.getActualDate()).append(" ERROR ping test failed to -> ").append(stateInfo).append(" system is unreachable, please check the options below: *****\n");
+                logsBuffer.append("***** ").append(" ERROR ping test failed to -> ").append(stateInfo).append(" system is unreachable, please check the options below: *****\n");
                 logsBuffer.append("***** SERVICES STATUS *******");
                 logsBuffer.append(pingData).append("\n");
                 logsBuffer.append("*** - Check if the network is working and if you have access to the server from the current IP *****\n");
@@ -199,10 +198,10 @@ public class AS400IngestParallelTask implements Runnable {
             ThreadsUtil.sleepCurrentThread(30);
 
         } catch (Exception e) {
-            ConfigVerification.changeServerStateStatus(this.serverState, "ERROR");
-            serverState = ConfigVerification.getServerStateStatus(this.serverState);
+            InMemoryConfigurations.changeServerStateStatus(this.serverState, "ERROR");
+            serverState = InMemoryConfigurations.getServerStateStatus(this.serverState);
             stateInfo = serverState != null ? serverState.toString() : this.serverState.toString();
-            logsBuffer.append("***** ").append(ConfigVerification.getActualDate()).append(" ERROR getting data from as400 ").append(stateInfo).append(" *****\n");
+            logsBuffer.append("***** ").append(" ERROR getting data from as400 ").append(stateInfo).append(" *****\n");
             logsBuffer.append("***** Unable to access: ").append(e.getMessage()).append(" *****\n");
             logger.error(logsBuffer);
 

@@ -1,10 +1,10 @@
 package com.extractor.as400.models;
 
 public class ServerDefAS400 {
-    String hostname;
-    String userId;
-    String user_password;
-    String tenant;
+    String hostname = "";
+    String userId = "";
+    String user_password = "";
+    String tenant = "";
 
     public ServerDefAS400(String hostname, String userId, String user_password, String tenant) {
         this.hostname = hostname;

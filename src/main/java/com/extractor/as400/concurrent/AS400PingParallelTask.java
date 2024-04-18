@@ -11,7 +11,6 @@ import com.utmstack.grpc.connection.GrpcConnection;
 import com.utmstack.grpc.exception.GrpcConnectionException;
 import com.utmstack.grpc.exception.PingException;
 import com.utmstack.grpc.jclient.config.Constants;
-import com.utmstack.grpc.jclient.config.interceptors.impl.GrpcConnectionKeyInterceptor;
 import com.utmstack.grpc.jclient.config.interceptors.impl.GrpcEmptyAuthInterceptor;
 import com.utmstack.grpc.service.PingService;
 import org.apache.logging.log4j.LogManager;
@@ -47,7 +46,8 @@ public class AS400PingParallelTask implements Runnable {
     private int pingTimeAmount = 10;
 
     // Used only for initialization
-    public AS400PingParallelTask () {}
+    public AS400PingParallelTask() {
+    }
 
     // Setter methods to modify default values for local variables
     public AS400PingParallelTask withPingTimeUnit(TimeUnit pingTimeUnit) {
@@ -59,6 +59,7 @@ public class AS400PingParallelTask implements Runnable {
         this.pingTimeAmount = pingTimeAmount;
         return this;
     }
+
     public AS400PingParallelTask build() {
         return this;
     }
@@ -66,35 +67,34 @@ public class AS400PingParallelTask implements Runnable {
     @Override
     public void run() {
         final String ctx = CLASSNAME + ".run";
-            try {
-                // Read the collector information
-                Map<String, String> info = FileOperations.getCollectorInfo();
+        try {
+            // Read the collector information
+            Map<String, String> info = FileOperations.getCollectorInfo();
 
-                // Validating port and collector id
-                int collectorMport = Validations.validateNumber(info.get(AS400ExtractorConstants.COLLECTOR_MANAGER_PORT), ValidationTypeEnum.PORT);
-                int collectorId = Validations.validateNumber(info.get(Constants.COLLECTOR_ID_HEADER),ValidationTypeEnum.ID);
+            // Validating port and collector id
+            int collectorMport = Validations.validateNumber(info.get(AS400ExtractorConstants.COLLECTOR_MANAGER_PORT), ValidationTypeEnum.PORT);
+            int collectorId = Validations.validateNumber(info.get(Constants.COLLECTOR_ID_HEADER), ValidationTypeEnum.ID);
 
-                // Connectiong to gRPC server
-                GrpcConnection con = new GrpcConnection();
-                    con.createChannel(info.get(AS400ExtractorConstants.COLLECTOR_MANAGER_HOST), collectorMport,
-                            new GrpcEmptyAuthInterceptor());
+            // Connectiong to gRPC server
+            GrpcConnection con = new GrpcConnection();
+            con.createChannel(info.get(AS400ExtractorConstants.COLLECTOR_MANAGER_HOST), collectorMport,
+                    new GrpcEmptyAuthInterceptor());
 
-                    // Creating ping requests of the current collector
-                    PingRequest pingRequest = PingRequest.newBuilder()
-                            .setAuth(AuthResponse.newBuilder()
-                                    .setId(collectorId)
-                                    .setKey(info.get(Constants.COLLECTOR_KEY_HEADER)).build())
-                            .setType(ConnectorType.COLLECTOR)
-                            .build();
+            // Creating ping requests of the current collector
+            PingRequest pingRequest = PingRequest.newBuilder()
+                    .setType(ConnectorType.COLLECTOR)
+                    .build();
+            AuthResponse collector = AuthResponse.newBuilder().setKey(info.get(Constants.COLLECTOR_KEY_HEADER))
+                    .setId(collectorId).build();
 
-                    // Creating the ping service and perform continuous ping
-                    PingService servPing = new PingService(con);
-                    servPing.ping(pingRequest, pingTimeUnit,pingTimeAmount);
+            // Creating the ping service and perform continuous ping
+            PingService servPing = new PingService(con);
+            servPing.ping(pingRequest, collector, pingTimeUnit, pingTimeAmount);
 
-            } catch (NumberFormatException | GrpcConnectionException | PingException e) {
-                logger.error(ctx + ": " + e.getMessage());
-            } catch (IOException e) {
-                logger.error(ctx + ": Error reading the collector information -> " + e.getMessage());
-            }
+        } catch (NumberFormatException | GrpcConnectionException | PingException e) {
+            logger.error(ctx + ": " + e.getMessage());
+        } catch (IOException e) {
+            logger.error(ctx + ": Error reading the collector information -> " + e.getMessage());
+        }
     }
 }
