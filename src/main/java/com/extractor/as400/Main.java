@@ -1,6 +1,5 @@
 package com.extractor.as400;
 
-import agent.Common;
 import com.extractor.as400.enums.AllowedParamsEnum;
 import com.extractor.as400.enums.InstallationOptionsEnum;
 import com.extractor.as400.exceptions.ExecutorAS400Exception;
@@ -28,7 +27,7 @@ public class Main {
         try {
             // Verify the args passed to the program
             if (UsageHelp.argsVerification(args)) {
-                InstallationOptionsEnum opts = InstallationOptionsEnum.getByValue((String) UsageHelp.getParamsFromArgs().get(AllowedParamsEnum.PARAM_OPTION.get()));
+                InstallationOptionsEnum opts = InstallationOptionsEnum.getByValue((String) UsageHelp.getParamsMap().get(AllowedParamsEnum.PARAM_OPTION.get()));
 
                 // Calling the correct executor for this option
                 IExecutor iExecutor = new ExecutorFactory().getExecutor(opts);

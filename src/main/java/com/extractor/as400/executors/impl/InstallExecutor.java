@@ -18,7 +18,6 @@ import com.extractor.as400.util.Validations;
 import com.utmstack.grpc.connection.GrpcConnection;
 import com.utmstack.grpc.exception.CollectorServiceGrpcException;
 import com.utmstack.grpc.exception.GrpcConnectionException;
-import com.utmstack.grpc.jclient.config.interceptors.KeyStore;
 import com.utmstack.grpc.jclient.config.interceptors.impl.GrpcConnectionKeyInterceptor;
 import com.utmstack.grpc.service.CollectorService;
 import org.apache.logging.log4j.LogManager;
@@ -48,9 +47,9 @@ public class InstallExecutor implements IExecutor {
         if (!FileOperations.isLockFileCreated()) {
             try {
                 // Begin gRPC connection
-                String collectorManagerHost = (String) UsageHelp.getParamsFromArgs().get(AllowedParamsEnum.PARAM_HOST.get());
-                String collectorManagerPort = (String) UsageHelp.getParamsFromArgs().get(AllowedParamsEnum.PARAM_PORT.get());
-                String connectionKey = (String) UsageHelp.getParamsFromArgs().get(AllowedParamsEnum.PARAM_CONNECTION_KEY.get());
+                String collectorManagerHost = (String) UsageHelp.getParamsMap().get(AllowedParamsEnum.PARAM_HOST.get());
+                String collectorManagerPort = (String) UsageHelp.getParamsMap().get(AllowedParamsEnum.PARAM_PORT.get());
+                String connectionKey = (String) UsageHelp.getParamsMap().get(AllowedParamsEnum.PARAM_CONNECTION_KEY.get());
 
                 // Connectiong to gRPC server
                 GrpcConnection con = new GrpcConnection();

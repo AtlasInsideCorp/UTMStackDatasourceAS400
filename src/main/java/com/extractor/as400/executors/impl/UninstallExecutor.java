@@ -1,6 +1,5 @@
 package com.extractor.as400.executors.impl;
 
-import agent.CollectorOuterClass.CollectorModule;
 import agent.CollectorOuterClass.CollectorDelete;
 import agent.Common.AuthResponse;
 import com.extractor.as400.enums.AllowedParamsEnum;
@@ -9,7 +8,6 @@ import com.extractor.as400.exceptions.ExecutorAS400Exception;
 import com.extractor.as400.exceptions.InetUtilException;
 import com.extractor.as400.file.FileOperations;
 import com.extractor.as400.interfaces.IExecutor;
-import com.extractor.as400.util.ConfigVerification;
 import com.extractor.as400.util.InetUtil;
 import com.extractor.as400.util.UsageHelp;
 import com.extractor.as400.util.Validations;
@@ -47,8 +45,8 @@ public class UninstallExecutor implements IExecutor {
         if (FileOperations.isLockFileCreated()) {
             try {
                 // Begin gRPC connection
-                String collectorManagerHost = (String) UsageHelp.getParamsFromArgs().get(AllowedParamsEnum.PARAM_HOST.get());
-                String collectorManagerPort = (String) UsageHelp.getParamsFromArgs().get(AllowedParamsEnum.PARAM_PORT.get());
+                String collectorManagerHost = (String) UsageHelp.getParamsMap().get(AllowedParamsEnum.PARAM_HOST.get());
+                String collectorManagerPort = (String) UsageHelp.getParamsMap().get(AllowedParamsEnum.PARAM_PORT.get());
 
                 // Connectiong to gRPC server
                 GrpcConnection con = new GrpcConnection();

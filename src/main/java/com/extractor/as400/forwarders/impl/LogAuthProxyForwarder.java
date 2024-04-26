@@ -52,9 +52,9 @@ public class LogAuthProxyForwarder implements IForwarder {
 
         try {
             // Begin gRPC connection
-            String collectorManagerHost = (String) UsageHelp.getParamsFromArgs().get(AllowedParamsEnum.PARAM_HOST.get());
-            String collectorManagerPort = (String) UsageHelp.getParamsFromArgs().get(AllowedParamsEnum.PARAM_PORT.get());
-            String connectionKey = (String) UsageHelp.getParamsFromArgs().get(AllowedParamsEnum.PARAM_CONNECTION_KEY.get());
+            String collectorManagerHost = (String) UsageHelp.getParamsMap().get(AllowedParamsEnum.PARAM_HOST.get());
+            String collectorManagerPort = (String) UsageHelp.getParamsMap().get(AllowedParamsEnum.PARAM_PORT.get());
+            String connectionKey = (String) UsageHelp.getParamsMap().get(AllowedParamsEnum.PARAM_CONNECTION_KEY.get());
 
             // Set the authentication needed to forward logs through gRPC
             KeyStore.setConnectionKey(connectionKey);

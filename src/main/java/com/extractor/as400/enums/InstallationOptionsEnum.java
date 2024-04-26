@@ -1,6 +1,8 @@
 package com.extractor.as400.enums;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 public enum InstallationOptionsEnum {
@@ -15,7 +17,7 @@ public enum InstallationOptionsEnum {
         this.eValue = eValue;
     }
 
-    private String get() {
+    public String get() {
         return this.eValue;
     }
 
@@ -35,5 +37,14 @@ public enum InstallationOptionsEnum {
      * */
     public static Object [] getAllowedOptions () {
         return Arrays.stream(InstallationOptionsEnum.values()).filter(f-> !f.equals(InstallationOptionsEnum.UNRECOGNIZED_OPTION)).toArray();
+    }
+
+    public static List<AllowedParamsEnum> getOptionalParamsByOption (InstallationOptionsEnum option) {
+        switch (option) {
+            case RUN:
+                return List.of(AllowedParamsEnum.PARAM_CONNECTION_KEY);
+            default:
+                return new ArrayList<>();
+        }
     }
 }
