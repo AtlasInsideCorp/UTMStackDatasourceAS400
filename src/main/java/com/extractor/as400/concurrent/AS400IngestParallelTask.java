@@ -145,6 +145,14 @@ public class AS400IngestParallelTask implements Runnable {
                             }
 
                         }
+                        // Process the remaining logs
+                        if (!messagesForwardingList.isEmpty()) {
+                            // Then send the logs to forwarder and clear the list
+                            IForwarder forwarder = new ForwarderFactory().getForwarder(this.forwarder, this.serverState);
+                            forwarder.forwardLogs(messagesForwardingList);
+                            messagesForwardingList.clear();
+                        }
+
 
                         serverState = InMemoryConfigurations.getServerStateStatus(this.serverState);
                         stateInfo = serverState != null ? serverState.toString() : this.serverState.toString();

@@ -90,8 +90,25 @@ public class LogAuthProxyForwarder implements IForwarder {
                         countDown.set(0);
                         throw new RuntimeException("Unable to send log batch from: " + this.as400Server.getServerDefAS400().getHostName() + " -> "+e.getMessage());
                     }
+                    // Add the message number 101
+                    grpcBatchList.add(formatLog(m));
+                    countDown.addAndGet(1);
                 }
             });
+
+            // Finally send the remaining logs in the list
+            if (!grpcBatchList.isEmpty()) {
+                LogMessage messageBatch = LogMessage.newBuilder().addAllData(grpcBatchList).setLogType(CollectorModule.AS_400.name()).build();
+                try {
+                    countDown.set(0);
+                    serv.sendLogs(messageBatch, collectorKey);
+                    grpcBatchList.clear();
+                } catch (LogMessagingException e) {
+                    grpcBatchList.clear();
+                    countDown.set(0);
+                    throw new RuntimeException("Unable to send log batch from: " + this.as400Server.getServerDefAS400().getHostName() + " -> " + e.getMessage());
+                }
+            }
         } catch (Exception e) {
             logger.error(ctx + ": " + e.getMessage());
             return false;

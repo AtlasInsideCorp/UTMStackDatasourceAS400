@@ -75,8 +75,7 @@ public class RunExecutor implements IExecutor {
                         for (serverStateIterator = InMemoryConfigurations.getServerStateList().iterator(); serverStateIterator.hasNext(); ) {
                             try {
                                 etlExecutor.execute(new AS400IngestParallelTask().withServerState(serverStateIterator.next())
-                                        .withForwarder(ForwarderEnum.getByValue((String) UsageHelp.getParamsFromArgs()
-                                                .get(ForwarderEnum.GRPC_LOG_AUTH_PROXY.get()))).build());
+                                        .withForwarder(ForwarderEnum.GRPC_LOG_AUTH_PROXY).build());
                             } catch (Exception e) {
                                 logger.error(ctx + ": Error processing logs -> " + e.getMessage());
                             }
