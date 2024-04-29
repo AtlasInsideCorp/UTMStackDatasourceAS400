@@ -120,8 +120,12 @@ public class UsageHelp {
                             paramErrors.append("\nThe parameter -> ").append(p.get()).append(", is missing, please check.");
                     }
                 } else {
-                    paramErrors.append("\n" + AllowedParamsEnum.PARAM_OPTION + " param is not present, because of that, even optional parameters will be marked as missing" +
-                            " if it isn't specified. The parameter -> ").append(p.get()).append(", is missing, please check.");
+                    paramErrors.append("\n" + AllowedParamsEnum.PARAM_OPTION.get() + " param is not present, because of that, even optional parameters will be marked as missing" +
+                            " if it isn't specified. ");
+                    // Avoid to register an additional message if the param is -option
+                    if (p != AllowedParamsEnum.PARAM_OPTION) {
+                        paramErrors.append("The parameter -> ").append(p.get()).append(", is missing, please check.");
+                    }
                 }
             }
         });
