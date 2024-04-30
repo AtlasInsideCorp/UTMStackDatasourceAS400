@@ -10,7 +10,6 @@ import org.apache.logging.log4j.Logger;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * This class is used to provide some execution parameters validations and usage help
@@ -23,12 +22,12 @@ public class UsageHelp {
     public static String usage() {
         return "Verify that the args passed to the program have this format: -option=XXX -host=XXX -port=XXX -connection-key=XXX" +
                 "\n*** Param -> Values ***" +
-                "\n  -option: Can be one of " + Arrays.toString(InstallationOptionsEnum.getAllowedOptions()) +
+                "\n  -option: (Required) Can be one of " + Arrays.toString(InstallationOptionsEnum.getAllowedOptions()) +
                 //"\n  -forward-to: Can be " + (ForwarderEnum.getAllowedForwarders().length > 1 ? "one of " : "only ") + Arrays.toString(ForwarderEnum.getAllowedForwarders()) +
-                "\n  -host: Represents the host of the collector manager to connect to" +
-                "\n  -port: Represents the port of the collector manager to connect to" + ", usually 50051 " +
-                "\n  -connection-key: Represents the purchased key of your UTMStack instance" +
-                "\n  Example: -option=INSTALL -forward-to=GRPC_LOG_AUTH_PROXY -host=localhost -port=50051 -connection-key=XXX";
+                "\n  -host: (Optional when -option=RUN) Represents the host of the collector manager to connect to" +
+                "\n  -port: (Optional when -option=RUN) Represents the port of the collector manager to connect to" + ", usually 50051 " +
+                "\n  -connection-key: (Optional when -option=RUN) Represents the purchased key of your UTMStack instance" +
+                "\n  Example: -option=INSTALL -host=localhost -port=50051 -connection-key=XXX";
     }
 
     public static String duplicateErrorDesc() {
@@ -64,6 +63,7 @@ public class UsageHelp {
         }
         if (StringUtil.hasText(paramErrors.toString())) {
             logger.error(ctx + ": " + paramErrors);
+            return false;
         }
         return true;
     }

@@ -1,15 +1,10 @@
 package com.extractor.as400.executors.impl;
 
-import agent.Common;
-import agent.Ping;
 import com.extractor.as400.concurrent.AS400ConfigurationParallelTask;
 import com.extractor.as400.concurrent.AS400PingParallelTask;
 import com.extractor.as400.concurrent.AS400IngestParallelTask;
-import com.extractor.as400.config.AS400ExtractorConstants;
 import com.extractor.as400.config.InMemoryConfigurations;
-import com.extractor.as400.enums.AllowedParamsEnum;
 import com.extractor.as400.enums.ForwarderEnum;
-import com.extractor.as400.enums.ValidationTypeEnum;
 import com.extractor.as400.exceptions.ExecutorAS400Exception;
 import com.extractor.as400.file.FileOperations;
 import com.extractor.as400.grpc.CallOneTimeCollectorConfig;
@@ -17,7 +12,6 @@ import com.extractor.as400.interfaces.IExecutor;
 import com.extractor.as400.models.ServerState;
 import com.extractor.as400.util.ConfigVerification;
 import com.extractor.as400.util.ThreadsUtil;
-import com.extractor.as400.util.UsageHelp;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -117,6 +111,9 @@ public class RunExecutor implements IExecutor {
                     }
                 }
             }
+        } else {
+            throw new ExecutorAS400Exception(ctx + ": The configuration lock file doesn't exist. This configuration" +
+                    " is needed when -option=RUN. Please, uninstall and install the collector again.");
         }
     }
 }
