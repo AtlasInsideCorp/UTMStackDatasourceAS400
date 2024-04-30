@@ -50,6 +50,8 @@ public class AS400ConfigurationParallelTask implements Runnable {
     @Override
     public void run() {
         final String ctx = CLASSNAME + ".run";
+        // Creating a latch to wait between stream creation calls
+        final CountDownLatch waitLatch = new CountDownLatch(1);
         try {
             // Read the collector information
             Map<String, String> info = FileOperations.getCollectorInfo();
@@ -70,7 +72,7 @@ public class AS400ConfigurationParallelTask implements Runnable {
             StreamObserver<CollectorMessages> collectorStreamObserver;
             CollectorService s = new CollectorService(con);
 
-            // Creating the ping service and perform continuous ping
+            // Creating the collector stream and wait for configurations
             final CountDownLatch finishLatch = new CountDownLatch(1);
             while (true) {
                 try {
@@ -92,6 +94,7 @@ public class AS400ConfigurationParallelTask implements Runnable {
                     }
                 } catch (CollectorServiceGrpcException e) {
                     logger.error(ctx + ": " + e.getMessage());
+                    waitLatch.await(60, TimeUnit.SECONDS);
                 } catch (InterruptedException e) {
                     String msg = ctx + ": Configuration stream was interrupted: " + e.getMessage();
                     logger.error(msg);
@@ -99,7 +102,7 @@ public class AS400ConfigurationParallelTask implements Runnable {
             }
 
 
-        } catch (NumberFormatException | GrpcConnectionException e) {
+        } catch (NumberFormatException | GrpcConnectionException | InterruptedException e) {
             logger.error(ctx + ": " + e.getMessage());
         } catch (IOException e) {
             logger.error(ctx + ": Error reading the collector information from the lock file -> " + e.getMessage());
