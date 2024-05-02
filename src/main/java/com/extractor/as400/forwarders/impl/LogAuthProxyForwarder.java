@@ -1,13 +1,12 @@
 package com.extractor.as400.forwarders.impl;
 
 import agent.CollectorOuterClass.CollectorModule;
-import com.extractor.as400.enums.AllowedParamsEnum;
+import com.extractor.as400.config.AS400ExtractorConstants;
 import com.extractor.as400.enums.ForwarderEnum;
 import com.extractor.as400.enums.ValidationTypeEnum;
 import com.extractor.as400.file.FileOperations;
 import com.extractor.as400.interfaces.IForwarder;
 import com.extractor.as400.models.ServerState;
-import com.extractor.as400.util.UsageHelp;
 import com.extractor.as400.util.Validations;
 import com.utmstack.grpc.connection.GrpcConnection;
 import com.utmstack.grpc.exception.LogMessagingException;
@@ -52,9 +51,10 @@ public class LogAuthProxyForwarder implements IForwarder {
 
         try {
             // Begin gRPC connection
-            String collectorManagerHost = (String) UsageHelp.getParamsMap().get(AllowedParamsEnum.PARAM_HOST.get());
-            String collectorManagerPort = (String) UsageHelp.getParamsMap().get(AllowedParamsEnum.PARAM_PORT.get());
-            String connectionKey = (String) UsageHelp.getParamsMap().get(AllowedParamsEnum.PARAM_CONNECTION_KEY.get());
+            Map<String, String> info = FileOperations.getCollectorInfo();
+            String collectorManagerHost = info.get(AS400ExtractorConstants.COLLECTOR_MANAGER_HOST);
+            String collectorManagerPort = info.get(AS400ExtractorConstants.COLLECTOR_MANAGER_PORT);
+            String connectionKey = info.get(Constants.COLLECTOR_KEY_HEADER);
 
             // Set the authentication needed to forward logs through gRPC
             KeyStore.setConnectionKey(connectionKey);
@@ -68,7 +68,6 @@ public class LogAuthProxyForwarder implements IForwarder {
             LogMessagingService serv = new LogMessagingService(con);
 
             // Getting collector info
-            Map<String, String> info = FileOperations.getCollectorInfo();
             String collectorKey = info.get(Constants.COLLECTOR_KEY_HEADER);
 
             // Creating the batch list to store the messages to send according to the forwarder batch size
