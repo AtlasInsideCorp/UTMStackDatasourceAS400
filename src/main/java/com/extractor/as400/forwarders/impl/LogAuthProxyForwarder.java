@@ -1,6 +1,7 @@
 package com.extractor.as400.forwarders.impl;
 
 import agent.CollectorOuterClass.CollectorModule;
+import agent.Common.ConnectorType;
 import com.extractor.as400.config.AS400ExtractorConstants;
 import com.extractor.as400.enums.ForwarderEnum;
 import com.extractor.as400.enums.ValidationTypeEnum;
@@ -79,7 +80,8 @@ public class LogAuthProxyForwarder implements IForwarder {
                     grpcBatchList.add(formatLog(m));
                     countDown.addAndGet(1);
                 } else {
-                    LogMessage messageBatch = LogMessage.newBuilder().addAllData(grpcBatchList).setLogType(CollectorModule.AS_400.name()).build();
+                    LogMessage messageBatch = LogMessage.newBuilder().addAllData(grpcBatchList)
+                            .setLogType(CollectorModule.AS_400.name()).setType(ConnectorType.COLLECTOR).build();
                     try {
                         countDown.set(0);
                         serv.sendLogs(messageBatch, collectorKey);
