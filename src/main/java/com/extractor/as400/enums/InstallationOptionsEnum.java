@@ -42,7 +42,9 @@ public enum InstallationOptionsEnum {
     public static List<AllowedParamsEnum> getOptionalParamsByOption (InstallationOptionsEnum option) {
         switch (option) {
             case RUN:
-                return List.of(AllowedParamsEnum.PARAM_CONNECTION_KEY,AllowedParamsEnum.PARAM_HOST, AllowedParamsEnum.PARAM_PORT);
+            case UNINSTALL:
+                return List.of(AllowedParamsEnum.PARAM_CONNECTION_KEY
+                        ,AllowedParamsEnum.PARAM_HOST, AllowedParamsEnum.PARAM_PORT, AllowedParamsEnum.PARAM_LOGS_PORT);
             default:
                 return new ArrayList<>();
         }

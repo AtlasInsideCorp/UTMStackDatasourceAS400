@@ -17,7 +17,7 @@ public class ConfigVerification {
     private static final Logger logger = LogManager.getLogger(ConfigVerification.class);
     // To hold the compilation version used to log
     public static final String API_VERSION_SHORT = "2.2.0";
-    public static final String API_VERSION = API_VERSION_SHORT + " - 13-03-24 14:48:15";
+    public static final String API_VERSION = API_VERSION_SHORT + " - 08-05-24 16:45:15";
 
     public static boolean isEnvironmentOk() {
         final String ctx = CLASSNAME + ".isEnvironmentOk";
@@ -26,12 +26,12 @@ public class ConfigVerification {
             // Updating configuration and servers state list
             InMemoryConfigurations.updateConfigurationList();
             InMemoryConfigurations.generateServerStateList();
-            if (InMemoryConfigurations.isServerConfigDuplicated()) {
+            /*if (InMemoryConfigurations.isServerConfigDuplicated()) {
                 logger.error(ctx + ": Environment configuration error");
                 logger.error(ctx + " *********** Check your configuration, some variables are not configured correctly ***********" +
                         "\n * Can't be duplicated servers -> (same hostname and tenant)");
                 return false;
-            }
+            }*/
             if (InMemoryConfigurations.getServerStateList().isEmpty()) {
                 return false;
             }

@@ -46,6 +46,8 @@ public class CallOneTimeCollectorConfig {
             AuthResponse collector = AuthResponse.newBuilder().setKey(info.get(Constants.COLLECTOR_KEY_HEADER))
                     .setId(collectorId).build();
             CollectorConfig config = s.requestCollectorConfig(req, collector);
+            // Close the connection channel
+            con.getConnectionChannel().shutdown();
             if (config.getGroupsList().isEmpty()) {
                 return false;
             } else {

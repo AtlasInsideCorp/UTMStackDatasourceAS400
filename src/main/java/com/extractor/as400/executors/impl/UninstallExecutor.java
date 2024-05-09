@@ -2,6 +2,7 @@ package com.extractor.as400.executors.impl;
 
 import agent.CollectorOuterClass.CollectorDelete;
 import agent.Common.AuthResponse;
+import com.extractor.as400.config.AS400ExtractorConstants;
 import com.extractor.as400.enums.AllowedParamsEnum;
 import com.extractor.as400.enums.ValidationTypeEnum;
 import com.extractor.as400.exceptions.ExecutorAS400Exception;
@@ -45,8 +46,9 @@ public class UninstallExecutor implements IExecutor {
         if (FileOperations.isLockFileCreated()) {
             try {
                 // Begin gRPC connection
-                String collectorManagerHost = (String) UsageHelp.getParamsMap().get(AllowedParamsEnum.PARAM_HOST.get());
-                String collectorManagerPort = (String) UsageHelp.getParamsMap().get(AllowedParamsEnum.PARAM_PORT.get());
+                Map<String, String> info = FileOperations.getCollectorInfo();
+                String collectorManagerHost = info.get(AS400ExtractorConstants.COLLECTOR_MANAGER_HOST);
+                String collectorManagerPort = info.get(AS400ExtractorConstants.COLLECTOR_LOGS_PORT);
 
                 // Connectiong to gRPC server
                 GrpcConnection con = new GrpcConnection();
@@ -55,7 +57,6 @@ public class UninstallExecutor implements IExecutor {
 
                 // Delete request
                 InetUtil.searchForLocalIP();
-                Map<String, String> info = FileOperations.getCollectorInfo();
                 CollectorDelete req = CollectorDelete.newBuilder()
                         .setDeletedBy(InetUtil.getHostname())
                         .build();

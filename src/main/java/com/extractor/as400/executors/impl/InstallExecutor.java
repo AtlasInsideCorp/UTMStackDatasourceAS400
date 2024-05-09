@@ -50,6 +50,7 @@ public class InstallExecutor implements IExecutor {
                 String collectorManagerHost = (String) UsageHelp.getParamsMap().get(AllowedParamsEnum.PARAM_HOST.get());
                 String collectorManagerPort = (String) UsageHelp.getParamsMap().get(AllowedParamsEnum.PARAM_PORT.get());
                 String connectionKey = (String) UsageHelp.getParamsMap().get(AllowedParamsEnum.PARAM_CONNECTION_KEY.get());
+                String collectorLogsOutPort = (String) UsageHelp.getParamsMap().get(AllowedParamsEnum.PARAM_LOGS_PORT.get());
 
                 // Connectiong to gRPC server
                 GrpcConnection con = new GrpcConnection();
@@ -71,7 +72,8 @@ public class InstallExecutor implements IExecutor {
                 AuthResponse response = serv.registerCollector(req, connectionKey);
 
                 // Saving collector info in the lock file
-                CollectorFileConfiguration config = new CollectorFileConfiguration(response, collectorManagerHost, Integer.parseInt(collectorManagerPort));
+                CollectorFileConfiguration config = new CollectorFileConfiguration(response, collectorManagerHost,
+                        Integer.parseInt(collectorManagerPort), Validations.validateNumber(collectorLogsOutPort, ValidationTypeEnum.PORT));
                 FileOperations.createLockFile(config);
                 logger.info(ctx + ": Collector registered successfully.");
 

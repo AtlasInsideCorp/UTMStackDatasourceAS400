@@ -14,8 +14,9 @@ public enum AllowedParamsEnum {
 
 
     PARAM_OPTION("-option",2),
-    PARAM_HOST("-host",2),
-    PARAM_PORT("-port",2),
+    PARAM_HOST("-collector-manager-host",2),
+    PARAM_PORT("-collector-manager-port",2),
+    PARAM_LOGS_PORT("-logs-port",2),
     PARAM_CONNECTION_KEY("-connection-key",2);
     //PARAM_OUTPUT_FORWARDER("-forward-to",2);
 

@@ -226,6 +226,7 @@ public class FileOperations {
                 collectorInfo.put(Constants.COLLECTOR_KEY_HEADER, conf.getKey());
                 collectorInfo.put(AS400ExtractorConstants.COLLECTOR_MANAGER_HOST, conf.getHostCollectorManager());
                 collectorInfo.put(AS400ExtractorConstants.COLLECTOR_MANAGER_PORT, String.valueOf(conf.getPortCollectorManager()));
+                collectorInfo.put(AS400ExtractorConstants.COLLECTOR_LOGS_PORT, String.valueOf(conf.getPortLogAuthProxy()));
 
             } catch (IOException e) {
                 throw new IOException(ctx + ": " + e.getMessage());

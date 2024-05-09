@@ -20,14 +20,15 @@ public class UsageHelp {
     private static Map<String, Object> params = new LinkedHashMap<>();
 
     public static String usage() {
-        return "Verify that the args passed to the program have this format: -option=XXX -host=XXX -port=XXX -connection-key=XXX" +
+        return "Verify that the args passed to the program have this format: -option=XXX -collector-manager-host=XXX -collector-manager-port=XXX -logs-port=XXX -connection-key=XXX" +
                 "\n*** Param -> Values ***" +
                 "\n  -option: (Required) Can be one of " + Arrays.toString(InstallationOptionsEnum.getAllowedOptions()) +
                 //"\n  -forward-to: Can be " + (ForwarderEnum.getAllowedForwarders().length > 1 ? "one of " : "only ") + Arrays.toString(ForwarderEnum.getAllowedForwarders()) +
-                "\n  -host: (Optional when -option=RUN) Represents the host of the collector manager to connect to" +
-                "\n  -port: (Optional when -option=RUN) Represents the port of the collector manager to connect to" + ", usually 50051 " +
-                "\n  -connection-key: (Optional when -option=RUN) Represents the purchased key of your UTMStack instance" +
-                "\n  Example: -option=INSTALL -host=localhost -port=50051 -connection-key=XXX";
+                "\n  -collector-manager-host: (Optional when -option=RUN) Represents the host of the collector manager to connect to." +
+                "\n  -collector-manager-port: (Optional when -option=RUN) Represents the port of the collector manager to connect to, usually 9000." +
+                "\n  -logs-port: (Optional when -option=RUN or UNINSTALL) Represents the port of the logs authentication proxy " + ", usually 50051." +
+                "\n  -connection-key: (Optional when -option=RUN or UNINSTALL) Represents the purchased key of your UTMStack instance" +
+                "\n  Example: -option=INSTALL -collector-manager-host=localhost -collector-manager-port=9000 -logs-port=50051 -connection-key=XXX";
     }
 
     public static String duplicateErrorDesc() {

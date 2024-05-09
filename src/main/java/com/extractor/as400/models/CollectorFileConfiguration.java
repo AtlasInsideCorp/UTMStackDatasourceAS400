@@ -10,14 +10,19 @@ import agent.Common.AuthResponse;
 public class CollectorFileConfiguration {
     String hostCollectorManager;
     int portCollectorManager;
+    int portLogAuthProxy;
     int id;
     String key;
 
-    public CollectorFileConfiguration(AuthResponse response, String hostCollectorManager, int portCollectorManager) {
+    public CollectorFileConfiguration(AuthResponse response,
+                                      String hostCollectorManager,
+                                      int portCollectorManager,
+                                      int portLogAuthProxy) {
         this.hostCollectorManager = hostCollectorManager;
         this.portCollectorManager = portCollectorManager;
         this.id = response.getId();
         this.key = response.getKey();
+        this.portLogAuthProxy = portLogAuthProxy;
     }
 
     public CollectorFileConfiguration() {
@@ -53,5 +58,13 @@ public class CollectorFileConfiguration {
 
     public void setKey(String key) {
         this.key = key;
+    }
+
+    public int getPortLogAuthProxy() {
+        return portLogAuthProxy;
+    }
+
+    public void setPortLogAuthProxy(int portLogAuthProxy) {
+        this.portLogAuthProxy = portLogAuthProxy;
     }
 }
