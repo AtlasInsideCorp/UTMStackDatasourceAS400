@@ -26,12 +26,12 @@ public class ConfigVerification {
             // Updating configuration and servers state list
             InMemoryConfigurations.updateConfigurationList();
             InMemoryConfigurations.generateServerStateList();
-            /*if (InMemoryConfigurations.isServerConfigDuplicated()) {
+            if (InMemoryConfigurations.isServerConfigDuplicated()) {
                 logger.error(ctx + ": Environment configuration error");
                 logger.error(ctx + " *********** Check your configuration, some variables are not configured correctly ***********" +
-                        "\n * Can't be duplicated servers -> (same hostname and tenant)");
+                        "\n * Can't be duplicated configurations -> (same hostname and group configuration name)");
                 return false;
-            }*/
+            }
             if (InMemoryConfigurations.getServerStateList().isEmpty()) {
                 return false;
             }

@@ -92,7 +92,7 @@ public class RunExecutor implements IExecutor {
                     //
                     CountDownLatch waitLatch = new CountDownLatch(1);
                     try {
-                        waitLatch.await(10, TimeUnit.SECONDS);
+                        waitLatch.await(60, TimeUnit.SECONDS);
                     } catch (InterruptedException e) {
                         logger.error(ctx + ": System was interrupted while waiting for the next execution.");
                     }

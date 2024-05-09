@@ -21,10 +21,11 @@ public class InMemoryConfigurations {
 
 
     // Method to update the temporary configurations list
-    public static void updateTemporaryConfigurationList () {
+    public static void updateTemporaryConfigurationList() {
         tempConfigurations.clear();
         tempConfigurations.addAll(fromGrpcConfigurations);
     }
+
     // Method to generate the server list with state. Is static to always access the same elements when using threads
     public static void generateServerStateList() {
         serverStateList.clear();
@@ -42,28 +43,30 @@ public class InMemoryConfigurations {
     public static void updateConfigurationList() {
         CollectorConfig collectorConfig = !tempConfigurations.isEmpty() ?
                 tempConfigurations.get(0) : null;
-        if (collectorConfig != null && !collectorConfig.getGroupsList().isEmpty()) {
+        if (collectorConfig != null) {
             serversAS400.clear();
-            collectorConfig.getGroupsList().forEach(
-                    g -> {
-                        ServerDefAS400 serverDefAS400 = new ServerDefAS400();
-                        serverDefAS400.setTenant(g.getGroupName());
-                        g.getConfigurationsList().forEach(
-                                c -> {
-                                    if (c.getConfKey().equals(ConfigurationParamsEnum.AS400_USER.get())) {
-                                        serverDefAS400.setUserId(c.getConfValue());
+            if (!collectorConfig.getGroupsList().isEmpty()) {
+                collectorConfig.getGroupsList().forEach(
+                        g -> {
+                            ServerDefAS400 serverDefAS400 = new ServerDefAS400();
+                            serverDefAS400.setTenant(g.getGroupName());
+                            g.getConfigurationsList().forEach(
+                                    c -> {
+                                        if (c.getConfKey().equals(ConfigurationParamsEnum.AS400_USER.get())) {
+                                            serverDefAS400.setUserId(c.getConfValue());
+                                        }
+                                        if (c.getConfKey().equals(ConfigurationParamsEnum.AS400_PASS.get())) {
+                                            serverDefAS400.setUserPassword(c.getConfValue());
+                                        }
+                                        if (c.getConfKey().equals(ConfigurationParamsEnum.AS400_HOST.get())) {
+                                            serverDefAS400.setHostName(c.getConfValue());
+                                        }
                                     }
-                                    if (c.getConfKey().equals(ConfigurationParamsEnum.AS400_PASS.get())) {
-                                        serverDefAS400.setUserPassword(c.getConfValue());
-                                    }
-                                    if (c.getConfKey().equals(ConfigurationParamsEnum.AS400_HOST.get())) {
-                                        serverDefAS400.setHostName(c.getConfValue());
-                                    }
-                                }
-                        );
-                        serversAS400.add(serverDefAS400);
-                    }
-            );
+                            );
+                            serversAS400.add(serverDefAS400);
+                        }
+                );
+            }
         }
     }
 

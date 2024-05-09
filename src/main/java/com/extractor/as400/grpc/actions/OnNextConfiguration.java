@@ -17,7 +17,7 @@ public class OnNextConfiguration implements IExecuteActionOnNext {
     @Override
     public void executeOnNext(Object o) {
         if (o instanceof CollectorMessages) {
-            if (((CollectorMessages) o).hasConfig() && !((CollectorMessages) o).getConfig().getGroupsList().isEmpty()) {
+            if (((CollectorMessages) o).hasConfig() ) {
                 InMemoryConfigurations.getFromGrpcConfigurations().clear();
                 InMemoryConfigurations.getFromGrpcConfigurations().add(((CollectorMessages) o).getConfig());
             }

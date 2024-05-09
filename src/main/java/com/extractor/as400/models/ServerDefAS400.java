@@ -49,7 +49,7 @@ public class ServerDefAS400 {
     @Override
     public String toString() {
         return "Server INFO { " +
-                "tenant=" + tenant +
+                "group name=" + tenant +
                 ", hostname=" + hostname +
                 " }";
     }
