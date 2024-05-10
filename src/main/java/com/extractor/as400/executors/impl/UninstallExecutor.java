@@ -48,7 +48,7 @@ public class UninstallExecutor implements IExecutor {
                 // Begin gRPC connection
                 Map<String, String> info = FileOperations.getCollectorInfo();
                 String collectorManagerHost = info.get(AS400ExtractorConstants.COLLECTOR_MANAGER_HOST);
-                String collectorManagerPort = info.get(AS400ExtractorConstants.COLLECTOR_LOGS_PORT);
+                String collectorManagerPort = info.get(AS400ExtractorConstants.COLLECTOR_MANAGER_PORT);
 
                 // Connectiong to gRPC server
                 GrpcConnection con = new GrpcConnection();
